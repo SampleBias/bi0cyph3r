@@ -23,6 +23,24 @@ bi0cyph3r tui         # Explicit equivalent
 
 From the Rust workspace, `cargo run` also opens the TUI. A terminal of at least 64 × 22 is required; 120 × 36 or larger gives the full sidebar layout.
 
+## Start screen & themes
+
+The TUI opens with the Bi0cyph3r ASCII logo and an animated double helix rotating around its vertical axis. The start menu offers **s — start**, **g — guide**, and **t — themes**. You can also select with the arrow keys / Tab and open with Enter. Space pauses or resumes the animation.
+
+The themes screen previews five palettes across the whole interface:
+
+| Theme | Palette |
+| --- | --- |
+| Original | The original dark cyan and violet |
+| Crimson | Red and scarlet on a dark background |
+| Paper | White background with dark text |
+| Monochrome | Black, white, and gray |
+| Amber | Warm vintage phosphor |
+
+Use arrows or `1`–`5` to preview, Enter to apply, or Esc to cancel. Theme choices last for the current session. Set a preferred launch palette with `bi0cyph3r --theme paper` or `BIOCYPHER_THEME=paper bi0cyph3r`; valid names are `original`, `crimson`, `paper`, `monochrome`, and `amber`.
+
+In the workbench, `t` / `F9` opens themes and `g` opens the guide. Esc leaves editing; Esc again returns to the start screen while preserving your session. The landing screen carries the credit: **Made with ASCII Heart by S4MPL3BI4S <3**.
+
 ## Workbench
 
 Four workspaces retain their inputs and last successful results for the current session:
@@ -41,7 +59,9 @@ The interface includes color-coded bases, sequence coordinates, GC meters, maske
 | `1`–`4` / `F1`–`F4` | Switch workspace; function keys also work while editing |
 | `Tab` / `Shift+Tab` | Focus the next / previous field |
 | `i` / `Enter` | Edit the focused field |
-| `Esc` | Finish editing or close a dialog |
+| `Esc` | Finish editing, close a dialog, or return to the start screen |
+| `t` / `F9` | Preview and switch themes |
+| `g` | Open the scrollable guide |
 | `m` | Cycle encoding mode |
 | `x` | Cycle plasmid structure |
 | `Ctrl+R` / `F5` | Run |
@@ -56,7 +76,7 @@ The interface includes color-coded bases, sequence coordinates, GC meters, maske
 
 Letter shortcuts apply in normal mode. While editing, letters are input, Enter inserts a newline in the message field, and arrows/Home/End move the cursor. Bracketed paste is supported.
 
-Start with `i`, type a message, and press `Ctrl+R`. Press `Esc` if necessary, then `d` and `Ctrl+R` to decode the result.
+Press `s` on the start screen, then `i`, type a message, and press `Ctrl+R`. Press `d` and `Ctrl+R` to decode the result. Running an operation leaves editing mode automatically.
 
 ## Scriptable commands
 
@@ -95,20 +115,6 @@ Files are created without overwriting existing paths, with owner-only permission
 
 The existing CBC formats do not provide authenticated encryption. The safety report is a local heuristic, not a biological safety certification. Plasmid assembly retains the former designer's sequence parts; it does not validate a complete expression-ready vector.
 
-## Optional Solana attestations
-
-The default build is fully local. The existing Solana client and on-chain program remain available as an optional feature:
-
-```bash
-cd biocypher-rust-solana
-cargo build --release --features solana --bin bi0cyph3r
-SOLANA_RPC_URL=http://127.0.0.1:8899 \
-SOLANA_KEYPAIR_PATH=/path/to/id.json \
-./target/release/bi0cyph3r encode "Hello" --attest
-```
-
-`BIOCYPHER_STORAGE_PROGRAM_ID` can override the program ID. Explicit `--attest` submits a transaction using the local keypair; the program must already be deployed and the payer funded. No attestation is submitted by the TUI.
-
 ## Docker
 
 ```bash
@@ -126,11 +132,12 @@ cd biocypher-rust-solana
 cargo fmt --all --check
 cargo test --locked --workspace
 cargo clippy --locked --workspace --all-targets -- -D warnings
-cargo check --locked --features solana --bin bi0cyph3r
 ```
 
-The Rust package retains its historical `biocypher-backend` library name. `backend/src/tui/` contains the application, editor, and rendering; `workbench.rs` is shared by the TUI and CLI; `dna/`, `safety/`, and `plasmid.rs` provide local operations. The `biocypher/` directory retains legacy Python codecs and CLI tooling.
+The Rust package retains its historical `biocypher-backend` library name. `backend/src/tui/` contains the application, editor, and rendering; `workbench.rs` is shared by the TUI and CLI; `dna/`, `safety/`, and `plasmid.rs` provide local operations.
 
-The former Actix API, Rust HTML frontend, Flask app, browser wallet, in-memory escrow server, and manufacturer forwarding endpoints have been removed. Export files for external delivery; no automatic escrow or manufacturer transmission is performed. Historical planning documents are retained as archives, not current setup instructions.
+All application code and tests are Rust. The legacy Python codecs, standalone CLI, installer, dependencies, and Python-only documentation have been removed. The [historical protocol notes](docs/PROTOCOL_SPECIFICATION.md) and [original attribution and license](docs/LEGACY_LICENSE) are preserved; retired source remains recoverable from Git history. CLI integration tests run with an empty `PATH` to check that local operations do not rely on Python or other external tools.
+
+The former Actix API, Rust HTML frontend, Flask app, browser wallet, Solana attestation, in-memory escrow server, and manufacturer forwarding endpoints have been removed. Export files for external delivery; no automatic escrow or manufacturer transmission is performed. Historical planning documents are retained as archives, not current setup instructions.
 
 [MIT license](LICENSE)

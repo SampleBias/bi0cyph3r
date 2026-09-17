@@ -20,10 +20,6 @@ pub enum BioCypherError {
     #[error("Validation error: {0}")]
     Validation(String),
 
-    // Solana errors (for Phase 2)
-    #[error("Solana error: {0}")]
-    Solana(String),
-
     // IO errors
     #[error("IO error: {0}")]
     Io(#[from] std::io::Error),

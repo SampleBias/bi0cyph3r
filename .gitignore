@@ -37,10 +37,6 @@ keypair.json
 *.secret
 secrets/
 
-# Solana
-test-ledger/
-.anchor/
-
 # IDE
 .idea/
 .vscode/

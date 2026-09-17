@@ -19,6 +19,15 @@ use clap::{Args, Parser, Subcommand};
     about = "A local DNA workbench. Run without arguments to open the Ratatui TUI."
 )]
 struct Cli {
+    /// Starting terminal palette; the home screen also has a live theme picker.
+    #[arg(
+        long,
+        global = true,
+        value_enum,
+        default_value = "original",
+        env = "BIOCYPHER_THEME"
+    )]
+    theme: biocypher_backend::tui::Theme,
     #[command(subcommand)]
     command: Option<Command>,
 }
@@ -69,10 +78,6 @@ struct OperationArgs {
     /// Export both split keys to a new private JSON file; required for split-key encoding.
     #[arg(long)]
     keys_output: Option<PathBuf>,
-    /// Record a Solana attestation using the configured local keypair.
-    #[cfg(feature = "solana")]
-    #[arg(long)]
-    attest: bool,
 }
 
 fn main() -> ExitCode {
@@ -93,7 +98,7 @@ fn main() -> ExitCode {
 
 fn run(cli: Cli) -> Result<()> {
     let (operation, args) = match cli.command {
-        None | Some(Command::Tui) => return biocypher_backend::tui::run(),
+        None | Some(Command::Tui) => return biocypher_backend::tui::run_with_theme(cli.theme),
         Some(Command::Encode(args)) => (Operation::Encode, args),
         Some(Command::Decode(args)) => (Operation::Decode, args),
         Some(Command::Safety(args)) => (Operation::Safety, args),
@@ -151,27 +156,5 @@ fn run(cli: Cli) -> Result<()> {
         "[{} bases · GC {:.1}% · {}]",
         result.stats.length, result.stats.gc_content, result.mode
     );
-    #[cfg(feature = "solana")]
-    if args.attest {
-        use biocypher_backend::solana::{hash_sequence, SolanaClient};
-        let client =
-            SolanaClient::from_env().context("Solana keypair or program ID is not configured")?;
-        let hash = hash_sequence(&result.sequence);
-        let runtime = tokio::runtime::Runtime::new()?;
-        let signature = runtime.block_on(async {
-            match operation {
-                Operation::Encode | Operation::Plasmid => {
-                    client.record_encode(result.mode, hash).await
-                }
-                Operation::Decode => client.record_decode(result.mode, hash).await,
-                Operation::Safety => {
-                    client
-                        .record_safety(hash, result.report.as_ref().unwrap().safety_status)
-                        .await
-                }
-            }
-        })?;
-        eprintln!("Solana attestation: {signature}");
-    }
     Ok(())
 }

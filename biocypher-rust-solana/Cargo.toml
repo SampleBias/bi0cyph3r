@@ -9,9 +9,6 @@ authors = ["Bi0cyph3r Team"]
 license = "MIT"
 
 [workspace.dependencies]
-# Async runtime
-tokio = { version = "1.35", features = ["full"] }
-
 # Terminal interface
 ratatui = { version = "0.30.2", features = ["unstable-rendered-line-info"] }
 crossterm = "0.29"
@@ -33,10 +30,6 @@ pbkdf2 = { version = "0.12", features = ["password-hash", "simple"] }
 sha2 = "0.10"
 rand = "0.8"
 base64 = "0.21"
-
-# Solana (Phase 2-3)
-solana-client = "2"
-solana-sdk = "2"
 
 # Utilities
 regex = "1.10"
