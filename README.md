@@ -2,7 +2,7 @@
 
 A terminal DNA workbench built with [Ratatui](https://ratatui.rs/). Encode messages, decode sequences, inspect DNA, and prepare plasmid payloads in a local, keyboard-driven interface.
 
-The app is terminal-only. It starts no web server and requires no browser, GUI, Python, Node.js, or network connection for local work.
+The app is terminal-only. It starts no web server and requires no browser, GUI, interpreter, or network connection for local work.
 
 ## Launch
 
@@ -136,8 +136,8 @@ cargo clippy --locked --workspace --all-targets -- -D warnings
 
 The Rust package retains its historical `biocypher-backend` library name. `backend/src/tui/` contains the application, editor, and rendering; `workbench.rs` is shared by the TUI and CLI; `dna/`, `safety/`, and `plasmid.rs` provide local operations.
 
-All application code and tests are Rust. The legacy Python codecs, standalone CLI, installer, dependencies, and Python-only documentation have been removed. The [historical protocol notes](docs/PROTOCOL_SPECIFICATION.md) and [original attribution and license](docs/LEGACY_LICENSE) are preserved; retired source remains recoverable from Git history. CLI integration tests run with an empty `PATH` to check that local operations do not rely on Python or other external tools.
+All application code and tests are Rust. The [historical protocol notes](docs/PROTOCOL_SPECIFICATION.md) and [original attribution and license](docs/LEGACY_LICENSE) are preserved. CLI integration tests run with an empty `PATH` to check that local operations do not rely on an interpreter or other external tools.
 
-The former Actix API, Rust HTML frontend, Flask app, browser wallet, Solana attestation, in-memory escrow server, and manufacturer forwarding endpoints have been removed. Export files for external delivery; no automatic escrow or manufacturer transmission is performed. Historical planning documents are retained as archives, not current setup instructions.
+Export files for external delivery; no automatic escrow or manufacturer transmission is performed. There is no web server, GUI, browser wallet, or blockchain integration.
 
 [MIT license](LICENSE)

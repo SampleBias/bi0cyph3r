@@ -1,7 +1,7 @@
 //! Secure DNA Cryptography Module
 //!
 //! Combines AES-256-CBC encryption with DNA encoding
-//! Ported from Python: biocypher/secure_nanopore_dna_crypto.py
+//! Native Rust port of the original BioCypher codec (see docs/LEGACY_LICENSE).
 
 use crate::dna::basic::DNACrypto;
 use crate::dna::markers;

@@ -7,7 +7,7 @@ use std::{
 
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
-use super::editor::Editor;
+use super::{editor::Editor, theme::Theme};
 use crate::{
     dna::EncodingMode,
     workbench::{self, Format, Operation, Output, Request, MODES},
@@ -70,6 +70,15 @@ pub enum Dialog {
 
 type WorkerResult = Result<Output, String>;
 
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum Screen {
+    #[default]
+    Home,
+    Workbench,
+    Guide,
+    Themes,
+}
+
 pub struct Job {
     receiver: Receiver<WorkerResult>,
     pub page: usize,
@@ -77,6 +86,16 @@ pub struct Job {
 }
 
 pub struct App {
+    pub screen: Screen,
+    pub theme: Theme,
+    pub menu_index: usize,
+    pub theme_index: usize,
+    pub guide_scroll: u16,
+    pub rotation: f64,
+    pub animate: bool,
+    previous_screen: Screen,
+    previous_theme: Theme,
+    animation_updated: Instant,
     pub pages: [Workspace; 4],
     pub page: usize,
     pub focus: Field,
@@ -94,6 +113,16 @@ pub struct App {
 impl Default for App {
     fn default() -> Self {
         Self {
+            screen: Screen::Home,
+            theme: Theme::default(),
+            menu_index: 0,
+            theme_index: 0,
+            guide_scroll: 0,
+            rotation: 0.0,
+            animate: true,
+            previous_screen: Screen::Home,
+            previous_theme: Theme::default(),
+            animation_updated: Instant::now(),
             pages: std::array::from_fn(|_| Workspace::default()),
             page: 0,
             focus: Field::Input,
@@ -111,6 +140,105 @@ impl Default for App {
 }
 
 impl App {
+    pub fn enter_workbench(&mut self) {
+        self.screen = Screen::Workbench;
+        self.editing = false;
+    }
+
+    fn open_guide(&mut self) {
+        self.previous_screen = self.screen;
+        self.screen = Screen::Guide;
+        self.guide_scroll = 0;
+    }
+
+    fn open_themes(&mut self) {
+        self.previous_screen = self.screen;
+        self.previous_theme = self.theme;
+        self.theme_index = Theme::ALL
+            .iter()
+            .position(|t| *t == self.theme)
+            .unwrap_or(0);
+        self.screen = Screen::Themes;
+    }
+
+    fn menu_action(&mut self) {
+        match self.menu_index {
+            0 => self.enter_workbench(),
+            1 => self.open_guide(),
+            _ => self.open_themes(),
+        }
+    }
+
+    fn screen_key(&mut self, key: KeyEvent) {
+        match self.screen {
+            Screen::Home => match key.code {
+                KeyCode::Char('s') => self.enter_workbench(),
+                KeyCode::Char('g' | '?') => self.open_guide(),
+                KeyCode::Char('t') => self.open_themes(),
+                KeyCode::Enter => self.menu_action(),
+                KeyCode::Right | KeyCode::Down | KeyCode::Tab | KeyCode::Char('j' | 'l') => {
+                    self.menu_index = (self.menu_index + 1) % 3
+                }
+                KeyCode::Left | KeyCode::Up | KeyCode::BackTab | KeyCode::Char('k' | 'h') => {
+                    self.menu_index = (self.menu_index + 2) % 3
+                }
+                KeyCode::Char(' ') => self.animate = !self.animate,
+                KeyCode::Char('q') => self.request_quit(),
+                _ => {}
+            },
+            Screen::Guide => match key.code {
+                KeyCode::Esc | KeyCode::Char('g' | 'q') => self.screen = self.previous_screen,
+                KeyCode::Char('s') => self.enter_workbench(),
+                KeyCode::Down | KeyCode::Char('j') => {
+                    self.guide_scroll = self.guide_scroll.saturating_add(1)
+                }
+                KeyCode::Up | KeyCode::Char('k') => {
+                    self.guide_scroll = self.guide_scroll.saturating_sub(1)
+                }
+                KeyCode::PageDown | KeyCode::Char(' ') => {
+                    self.guide_scroll = self.guide_scroll.saturating_add(10)
+                }
+                KeyCode::PageUp => self.guide_scroll = self.guide_scroll.saturating_sub(10),
+                KeyCode::Home => self.guide_scroll = 0,
+                KeyCode::End => self.guide_scroll = u16::MAX,
+                _ => {}
+            },
+            Screen::Themes => {
+                match key.code {
+                    KeyCode::Esc | KeyCode::Char('q') => {
+                        self.theme = self.previous_theme;
+                        self.screen = self.previous_screen;
+                        return;
+                    }
+                    KeyCode::Enter => {
+                        self.screen = self.previous_screen;
+                        self.message(
+                            format!("{} theme applied to this session.", self.theme.name()),
+                            false,
+                        );
+                        return;
+                    }
+                    KeyCode::Down | KeyCode::Right | KeyCode::Tab | KeyCode::Char('j') => {
+                        self.theme_index = (self.theme_index + 1) % Theme::ALL.len()
+                    }
+                    KeyCode::Up | KeyCode::Left | KeyCode::BackTab | KeyCode::Char('k') => {
+                        self.theme_index =
+                            (self.theme_index + Theme::ALL.len() - 1) % Theme::ALL.len()
+                    }
+                    KeyCode::Char('1'..='5') => {
+                        if let KeyCode::Char(c) = key.code {
+                            self.theme_index = c as usize - '1' as usize;
+                        }
+                    }
+                    KeyCode::Char(' ') => self.animate = !self.animate,
+                    _ => {}
+                }
+                self.theme = Theme::ALL[self.theme_index];
+            }
+            Screen::Workbench => {}
+        }
+    }
+
     pub fn workspace(&self) -> &Workspace {
         &self.pages[self.page]
     }
@@ -238,6 +366,13 @@ impl App {
     }
 
     pub fn poll(&mut self) {
+        let now = Instant::now();
+        if self.animate {
+            self.rotation = (self.rotation
+                + now.duration_since(self.animation_updated).as_secs_f64() * 0.9)
+                % std::f64::consts::TAU;
+        }
+        self.animation_updated = now;
         self.tick = self.tick.wrapping_add(1);
         let Some(job) = &self.job else {
             return;
@@ -331,7 +466,7 @@ impl App {
                 editor.insert(text, false)
             }
             Some(_) => {}
-            None if self.job.is_none() && self.editing => {
+            None if self.screen == Screen::Workbench && self.job.is_none() && self.editing => {
                 let multiline = self.focus == Field::Input;
                 if let Some(editor) = self.editor() {
                     editor.insert(text, multiline);
@@ -355,6 +490,21 @@ impl App {
             self.dialog_key(key);
             return;
         }
+        if key.code == KeyCode::F(10) || (ctrl && key.code == KeyCode::Char('q')) {
+            self.request_quit();
+            return;
+        }
+        if key.code == KeyCode::F(9)
+            && self.screen != Screen::Themes
+            && self.screen != Screen::Guide
+        {
+            self.open_themes();
+            return;
+        }
+        if self.screen != Screen::Workbench {
+            self.screen_key(key);
+            return;
+        }
         if key.code == KeyCode::F(1) {
             self.select_page(0);
             return;
@@ -369,14 +519,6 @@ impl App {
         }
         if key.code == KeyCode::F(4) {
             self.select_page(3);
-            return;
-        }
-        if key.code == KeyCode::F(10) {
-            self.request_quit();
-            return;
-        }
-        if ctrl && key.code == KeyCode::Char('q') {
-            self.request_quit();
             return;
         }
         if self.job.is_some() {
@@ -424,7 +566,11 @@ impl App {
                 return;
             }
             KeyCode::Esc => {
-                self.editing = false;
+                if self.editing {
+                    self.editing = false;
+                } else {
+                    self.screen = Screen::Home;
+                }
                 return;
             }
             _ => {}
@@ -446,6 +592,8 @@ impl App {
             }
             KeyCode::Char('q') => self.request_quit(),
             KeyCode::Char('?') => self.dialog = Some(Dialog::Help),
+            KeyCode::Char('g') => self.open_guide(),
+            KeyCode::Char('t') => self.open_themes(),
             KeyCode::Char('m') => self.cycle_mode(false),
             KeyCode::Char('x') if self.operation() == Operation::Plasmid => {
                 self.pages[self.page].structure = self.workspace().structure.next();
@@ -588,6 +736,7 @@ mod tests {
     #[test]
     fn typing_does_not_trigger_navigation_and_tabs_retain_inputs() {
         let mut app = App::default();
+        app.enter_workbench();
         app.key(key(KeyCode::Char('i')));
         for c in "q1234msd?".chars() {
             app.key(key(KeyCode::Char(c)));
@@ -604,6 +753,7 @@ mod tests {
     #[test]
     fn passwords_and_paste_are_not_commands() {
         let mut app = App::default();
+        app.enter_workbench();
         app.pages[0].mode = EncodingMode::Secure;
         app.focus = Field::Password;
         app.editing = true;
@@ -615,6 +765,7 @@ mod tests {
     #[test]
     fn worker_result_returns_to_original_workspace_and_unsaved_keys_are_guarded() {
         let mut app = App::default();
+        app.enter_workbench();
         app.pages[0].input = Editor::new("Session roundtrip");
         app.pages[0].mode = EncodingMode::SplitKey;
         app.key(KeyEvent::new(KeyCode::Char('r'), KeyModifiers::CONTROL));
@@ -639,5 +790,62 @@ mod tests {
         app.key(key(KeyCode::Char('d')));
         assert!(!app.workspace().k1.text.is_empty());
         assert!(!app.workspace().k2.text.is_empty());
+    }
+
+    #[test]
+    fn startup_menu_guide_and_home_preserve_the_workbench() {
+        let mut app = App::default();
+        assert_eq!(app.screen, Screen::Home);
+        app.key(key(KeyCode::Char('g')));
+        assert_eq!(app.screen, Screen::Guide);
+        app.key(key(KeyCode::Esc));
+        assert_eq!(app.screen, Screen::Home);
+        app.key(key(KeyCode::Char('s')));
+        assert_eq!(app.screen, Screen::Workbench);
+        assert_eq!(app.operation(), Operation::Encode);
+        app.key(key(KeyCode::Char('i')));
+        app.paste("saved session");
+        app.key(key(KeyCode::Esc));
+        assert_eq!(app.screen, Screen::Workbench);
+        app.key(key(KeyCode::Esc));
+        assert_eq!(app.screen, Screen::Home);
+        app.key(key(KeyCode::Enter));
+        assert_eq!(app.workspace().input.text, "saved session");
+    }
+
+    #[test]
+    fn theme_preview_can_be_cancelled_or_applied_without_changing_inputs() {
+        let mut app = App::default();
+        app.key(key(KeyCode::Char('t')));
+        app.key(key(KeyCode::Char('3')));
+        assert_eq!(app.theme, Theme::Paper);
+        app.key(key(KeyCode::Esc));
+        assert_eq!(app.theme, Theme::Original);
+        assert_eq!(app.screen, Screen::Home);
+        app.key(key(KeyCode::Char('t')));
+        app.key(key(KeyCode::Char('2')));
+        app.key(key(KeyCode::Enter));
+        assert_eq!(app.theme, Theme::Crimson);
+        app.key(key(KeyCode::Char('s')));
+        app.pages[0].input = Editor::new("keep me");
+        app.key(key(KeyCode::F(9)));
+        app.key(key(KeyCode::Char('4')));
+        app.key(key(KeyCode::Enter));
+        assert_eq!(app.screen, Screen::Workbench);
+        assert_eq!(app.theme, Theme::Monochrome);
+        assert_eq!(app.workspace().input.text, "keep me");
+    }
+
+    #[test]
+    fn paused_animation_does_not_advance_with_input_events() {
+        let mut app = App::default();
+        app.key(key(KeyCode::Char(' ')));
+        let phase = app.rotation;
+        for _ in 0..10 {
+            app.key(key(KeyCode::Right));
+            app.poll();
+        }
+        assert_eq!(app.rotation, phase);
+        assert!(!app.animate);
     }
 }

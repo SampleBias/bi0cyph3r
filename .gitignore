@@ -2,19 +2,6 @@
 target/
 **/*.rs.bk
 
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-venv/
-env/
-*.egg-info/
-.eggs/
-dist/
-build/
-
 # Node
 node_modules/
 npm-debug.log*

@@ -1,7 +1,7 @@
 //! DNA Safety Screener Module
 //!
 //! Analyzes DNA sequences for potential pathogen risks and natural occurrence
-//! Ported from Python: biocypher/safety_screener.py
+//! Native Rust port of the original BioCypher screener (see docs/LEGACY_LICENSE).
 
 use crate::dna::traits::SequenceStatistics;
 use crate::error::{Result, SafetyScreenerError as Error};

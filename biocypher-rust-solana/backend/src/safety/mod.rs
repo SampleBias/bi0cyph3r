@@ -1,7 +1,7 @@
 //! Safety screening module
 //!
 //! Analyzes DNA sequences for potential pathogen risks and natural occurrence
-//! Ported from Python: biocypher/safety_screener.py
+//! Native Rust port of the original BioCypher screener (see docs/LEGACY_LICENSE).
 
 pub mod screener;
 

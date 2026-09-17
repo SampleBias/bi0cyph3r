@@ -9,6 +9,6 @@ Bi0cyph3r is a terminal-only Rust application. Run `./run-tui.sh` or `bi0cyph3r`
 - Local file imports and explicit TXT / FASTA / JSON exports replace browser uploads and downloads.
 - Split keys use a separate export, and existing files are never overwritten.
 
-The HTTP server, static frontend, Flask application, browser wallet integration, Solana attestation, server escrow, and manufacturer forwarding endpoints have been removed. There is no GUI build or web deployment.
+There is no HTTP server, GUI build, web deployment, browser wallet, blockchain integration, server escrow, or manufacturer forwarding. External delivery uses explicit file exports.
 
-For current installation and usage, see [README](../README.md). Older task lists and activity logs describe the historical web architecture.
+For installation and usage, see [README](../README.md).

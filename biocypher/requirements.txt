@@ -1,2 +1,0 @@
-# Legacy Python encoding modules only. The primary app is the Rust TUI.
-cryptography==41.0.7

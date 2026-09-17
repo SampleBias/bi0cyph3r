@@ -1,7 +1,7 @@
 //! Basic DNA Cryptography Module
 //!
 //! Simple binary-to-DNA mapping: 00=A, 01=T, 10=C, 11=G
-//! Ported from Python: biocypher/dna_crypto.py
+//! Native Rust port of the original BioCypher codec (see docs/LEGACY_LICENSE).
 
 use crate::dna::traits::{DNACoder, SequenceStatistics, SequenceStats};
 use crate::error::{DNACryptoError, Result};

@@ -1,7 +1,7 @@
 //! Nanopore-Optimized DNA Cryptography Module
 //!
 //! Designed specifically for nanopore sequencing constraints
-//! Ported from Python: biocypher/nanopore_dna_crypto.py
+//! Native Rust port of the original BioCypher codec (see docs/LEGACY_LICENSE).
 
 use crate::dna::markers;
 use crate::dna::traits::{DNACoder, SequenceStatistics, SequenceStats};

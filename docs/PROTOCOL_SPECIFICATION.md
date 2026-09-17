@@ -1,5 +1,7 @@
 # BioCypher Protocol Specification v1.0
 
+> Historical design reference, not the current implementation contract. Some pseudocode, examples, and validation rules predate the Rust port. See the [current README](../README.md) and Rust tests for supported behavior, including UTF-8, strict input validation, and Split Key mode. Original attribution is preserved in [LEGACY_LICENSE](LEGACY_LICENSE).
+
 **Document Status**: Formal Protocol Specification  
 **Version**: 1.0  
 **Date**: 2025-01-XX  
@@ -619,4 +621,3 @@ This protocol specification is part of the BioCypher project. See LICENSE file f
 ---
 
 **End of Specification**
-
