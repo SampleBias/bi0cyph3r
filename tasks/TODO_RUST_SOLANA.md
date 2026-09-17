@@ -1,5 +1,7 @@
 # BioCypher Rust + Solana Migration - Detailed Plan
 
+> Historical document: web/Flask/API instructions below describe the retired architecture. See the [current terminal-only README](../README.md) for setup and usage.
+
 ## Option B: Hybrid Architecture (RECOMMENDED)
 
 ### Architecture Overview

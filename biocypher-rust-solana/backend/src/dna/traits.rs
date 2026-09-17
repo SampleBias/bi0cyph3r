@@ -95,13 +95,28 @@ mod tests {
 
     #[test]
     fn test_gc_content() {
-        let counts = BaseCounts { a: 2, t: 2, c: 2, g: 2 };
+        let counts = BaseCounts {
+            a: 2,
+            t: 2,
+            c: 2,
+            g: 2,
+        };
         assert_eq!(counts.calculate_gc_content(8), 50.0);
 
-        let counts = BaseCounts { a: 4, t: 4, c: 0, g: 0 };
+        let counts = BaseCounts {
+            a: 4,
+            t: 4,
+            c: 0,
+            g: 0,
+        };
         assert_eq!(counts.calculate_gc_content(8), 0.0);
 
-        let counts = BaseCounts { a: 0, t: 0, c: 4, g: 4 };
+        let counts = BaseCounts {
+            a: 0,
+            t: 0,
+            c: 4,
+            g: 4,
+        };
         assert_eq!(counts.calculate_gc_content(8), 100.0);
     }
 

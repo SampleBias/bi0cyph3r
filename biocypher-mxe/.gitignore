@@ -1,9 +1,0 @@
-.anchor
-target/
-node_modules/
-build/
-.DS_Store
-*.swp
-*.swo
-test-ledger/
-.yarn/

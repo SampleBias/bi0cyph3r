@@ -133,8 +133,14 @@ mod tests {
         assert_eq!(EncodingMode::SplitKey.to_string(), "splitkey");
 
         assert_eq!("basic".parse::<EncodingMode>(), Ok(EncodingMode::Basic));
-        assert_eq!("nanopore".parse::<EncodingMode>(), Ok(EncodingMode::Nanopore));
+        assert_eq!(
+            "nanopore".parse::<EncodingMode>(),
+            Ok(EncodingMode::Nanopore)
+        );
         assert_eq!("secure".parse::<EncodingMode>(), Ok(EncodingMode::Secure));
-        assert_eq!("splitkey".parse::<EncodingMode>(), Ok(EncodingMode::SplitKey));
+        assert_eq!(
+            "splitkey".parse::<EncodingMode>(),
+            Ok(EncodingMode::SplitKey)
+        );
     }
 }

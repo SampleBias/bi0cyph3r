@@ -1,5 +1,7 @@
 # BioCypher Rust + Solana Migration - Task List
 
+> Historical document: web/Flask/API instructions below describe the retired architecture. See the [current terminal-only README](../README.md) for setup and usage.
+
 ## Overview
 Migrate BioCypher from Python/Flask to Rust backend services with Solana blockchain integration using hybrid architecture.
 

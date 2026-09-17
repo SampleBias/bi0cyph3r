@@ -1,45 +1,39 @@
 [package]
 name = "biocypher-backend"
+description = "Bi0cyph3r terminal DNA workbench"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
-
-# Default binary for `cargo run` (server)
-default-run = "biocypher-backend"
+rust-version = "1.88"
+default-run = "bi0cyph3r"
+autobins = false
 
 [[bin]]
 name = "bi0cyph3r"
 path = "src/bin/bi0cyph3r.rs"
 
+[features]
+default = []
+solana = ["dep:solana-client", "dep:solana-sdk", "dep:tokio", "dep:bincode"]
+
 [dependencies]
-# Workspace dependencies
-tokio = { workspace = true }
-actix-web = { workspace = true }
-actix-cors = { workspace = true }
-actix-files = { workspace = true }
-serde = { workspace = true }
-serde_json = { workspace = true }
-thiserror = { workspace = true }
-anyhow = { workspace = true }
-aes = { workspace = true }
-cbc = { workspace = true }
-pbkdf2 = { workspace = true }
-base64 = { workspace = true }
-bincode = "1.3"
-sha2 = { workspace = true }
-rand = { workspace = true }
-tracing = { workspace = true }
-tracing-subscriber = { workspace = true }
-regex = { workspace = true }
-hex = { workspace = true }
-uuid = { workspace = true }
-solana-client = { workspace = true }
-solana-sdk = { workspace = true }
-
-# Additional dependencies
-validator = { version = "0.16", features = ["derive"] }
-derive_more = { version = "0.99", features = ["display", "error"] }
-
-[dev-dependencies]
-mockall = { workspace = true }
+ratatui.workspace = true
+crossterm.workspace = true
+clap.workspace = true
+unicode-width.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+anyhow.workspace = true
+aes.workspace = true
+cbc.workspace = true
+pbkdf2.workspace = true
+base64.workspace = true
+sha2.workspace = true
+rand.workspace = true
+regex.workspace = true
+tokio = { workspace = true, optional = true }
+solana-client = { workspace = true, optional = true }
+solana-sdk = { workspace = true, optional = true }
+bincode = { version = "1.3", optional = true }

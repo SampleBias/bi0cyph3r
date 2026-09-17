@@ -1,745 +1,136 @@
 # Bi0cyph3r
 
-```
- .----------------.  .----------------.  .----------------.  .----------------.  .----------------.  .----------------.  .----------------.  .----------------.  .----------------. 
-| .--------------. || .--------------. || .--------------. || .--------------. || .--------------. || .--------------. || .--------------. || .--------------. || .--------------. |
-| |   ______     | || |     _____    | || |     ____     | || |     ______   | || |  ____  ____  | || |   ______     | || |  ____  ____  | || |    ______    | || |  _______     | |
-| |  |_   _ \    | || |    |_   _|   | || |   .'    '.   | || |   .' ___  |  | || | |_  _||_  _| | || |  |_   __ \   | || | |_   ||   _| | || |   / ____ `.  | || | |_   __ \    | |
-| |    | |_) |   | || |      | |     | || |  |  .--.  |  | || |  / .'   \_|  | || |   \ \  / /   | || |    | |__) |  | || |   | |__| |   | || |   `'  __) |  | || |   | |__) |   | |
-| |    |  __'.   | || |      | |     | || |  | |    | |  | || |  | |         | || |    \ \/ /    | || |    |  ___/   | || |   |  __  |   | || |   _  |__ '.  | || |   |  __ /    | |
-| |   _| |__) |  | || |     _| |_    | || |  |  `--'  |  | || |  \ `.___.'\  | || |    _|  |_    | || |   _| |_      | || |  _| |  | |_  | || |  | \____) |  | || |  _| |  \ \_  | |
-| |  |_______/   | || |    |_____|   | || |   '.____.'   | || |   `._____.'  | || |   |______|   | || |  |_____|     | || | |____||____| | || |   \______.'  | || | |____| |___| | |
-| |              | || |              | || |              | || |              | || |              | || |              | || |              | || |              | || |              | |
-| '--------------' || '--------------' || '--------------' || '--------------' || '--------------' || '--------------' || '--------------' || '--------------' || '--------------' |
- '----------------'  '----------------'  '----------------'  '----------------'  '----------------'  '----------------'  '----------------'  '----------------'  '----------------' 
-                                                          
-    DNA Cryptography + MPC Privacy on Solana
-```
+A terminal DNA workbench built with [Ratatui](https://ratatui.rs/). Encode messages, decode sequences, inspect DNA, and prepare plasmid payloads in a local, keyboard-driven interface.
 
-**DNA Cryptography System** — Encode and decode messages as DNA sequences with optional blockchain verification and **Arcium MPC** for confidential computation.
+The app is terminal-only. It starts no web server and requires no browser, GUI, Python, Node.js, or network connection for local work.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+## Launch
 
----
-
-## Overview
-
-Bi0cyph3r is a DNA-based encoding system for storing and transmitting digital data. It supports four encoding modes, **Arcium-powered MPC** for privacy-preserving computation, a **Plasmid Designer** for creating expression-ready plasmids, **Split Key** for eliminating single points of failure in plasmid ordering, and **secure transmission** to DNA manufacturers (Twist, IDT, VectorBuilder).
-
-| Mode | Description | Use Case |
-|------|-------------|----------|
-| **Basic** | Simple binary→DNA mapping (00=A, 01=T, 10=C, 11=G) | Educational, simple encoding |
-| **Nanopore** | Triplet encoding, error correction, GC balancing, homopolymer avoidance | Nanopore sequencing optimization |
-| **Secure** | AES-256-CBC encryption + DNA encoding | Secure data storage |
-| **Split Key** | Random key K split into K1 (user) + K2 (escrow); manufacturer never receives key | Eliminate single point of failure in plasmid ordering |
-| **Arcium MPC** | Encrypted computation—message never decrypted on server | Confidential DNA encoding on Solana |
-
----
-
-## Arcium: Super Encrypted Computing
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                    ARCIUM MPC ENCRYPTED DNA ENCODING                        │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│   Client                Solana / Arcium              MPC Cluster            │
-│     │                          │                            │               │
-│     │  1. Encrypt message      │                            │               │
-│     │  2. Submit to MXE        │                            │               │
-│     │ ────────────────────────>│  3. Queue computation      │               │
-│     │                          │ ──────────────────────────>│               │
-│     │                          │                            │ 4. Compute    │
-│     │                          │                            │    in MPC     │
-│     │                          │  5. Callback (encrypted)   │               │
-│     │                          │<───────────────────────────│               │
-│     │  6. Decrypt DNA result   │                            │               │
-│     │<──────────────────────── │                                            │
-│     │                          │                            │               │
-│     └── Message & result stay encrypted end-to-end ──────────────────────── ┘
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-**Why Arcium?** Your message is encrypted before it leaves your device. The MPC cluster computes on secret-shared data—no single node ever sees plaintext. Only you can decrypt the DNA result.
-
----
-
-## Plasmid Designer & Secure Transmission
-
-- **Plasmid Designer** — Convert messages to DNA, view in linear and circular format (SeqViz), export FASTA/TXT/Instructions
-- **Expression mode** — Optional eGFP fluorescence cassette and decoding markers for payload extraction
-- **Secure transmission** — Encrypt plasmid designs (AES-256-GCM) and transmit to DNA manufacturer APIs via Arcium service
-- **Split Key transmission** — Send ciphertext-as-DNA directly to manufacturer; K2 held in escrow; no single party has full key
-
----
-
-## Project Status
-
-| Component | Status |
-|-----------|--------|
-| **Rust Backend** | ✅ Complete (Phase 1) |
-| **Basic DNA Mode** | ✅ Implemented |
-| **Nanopore DNA Mode** | ✅ Implemented |
-| **Secure DNA Mode** | ✅ Implemented |
-| **Safety Screener** | ✅ Implemented |
-| **REST API** | ✅ Working |
-| **Plasmid Designer** | ✅ Implemented (SeqViz, FASTA/TXT/Instructions export) |
-| **Expression Mode** | ✅ eGFP cassette, decoding markers, annotations |
-| **Secure Transmission** | ✅ Encrypted transmit to manufacturer via Arcium |
-| **Split Key Mode** | ✅ Encoded; split key + escrow + transmit-split-key |
-| **Arcium MXE** | ✅ Implemented (encode_basic, decode_basic) |
-| **Arcium Integration** | ✅ Backend `/api/arcium-info`, `/transmit-secure`, `/escrow-store`, `/escrow-retrieve`, `/transmit-split-key` |
-| **CLI** | ✅ `bi0cyph3r` encode/decode/safety |
-| **Web UI** | ✅ Browser-based at `/app/` (Encode, Decode, Safety, Plasmid tabs) |
-| **Solana Programs** | ✅ biocypher-storage (attestation) |
-| **Solana Integration** | ✅ store_on_chain, decode_on_chain, verify_on_chain |
-
----
-
-## Quick Start
-
-### Prerequisites
-
-- [Rust](https://rustup.rs/) (1.70+)
-- (Optional) [Solana CLI](https://docs.solana.com/cli/install-solana-cli-tools)
-- (Optional) [Arcium CLI](https://docs.arcium.com/developers/installation) for MXE
-
-### Option 1: Install script (recommended)
+Install a current stable Rust toolchain (Rust 1.88 or later), then run:
 
 ```bash
-./install.sh          # Build CLI
-./install.sh -i       # Build + install to ~/.local/bin
+./run-tui.sh
+```
 
-# CLI usage
+Or build and install the standalone binary:
+
+```bash
+./install.sh          # Build the release binary
+./install.sh -i       # Also install into ~/.local/bin
+bi0cyph3r             # Open the TUI
+bi0cyph3r tui         # Explicit equivalent
+```
+
+From the Rust workspace, `cargo run` also opens the TUI. A terminal of at least 64 × 22 is required; 120 × 36 or larger gives the full sidebar layout.
+
+## Workbench
+
+Four workspaces retain their inputs and last successful results for the current session:
+
+| Workspace | What it does |
+| --- | --- |
+| Encode | Convert UTF-8 text to DNA using Basic, Nanopore, Secure, or Split Key mode |
+| Decode | Recover text from raw DNA or a single FASTA record; extract marked plasmid payloads |
+| Safety | Inspect GC content, signature matches, natural matches, homopolymers, and reading frames |
+| Plasmid | Name and assemble a payload, optionally with decoding markers or the existing eGFP cassette; export sequence and annotations |
+
+The interface includes color-coded bases, sequence coordinates, GC meters, masked credential fields, session activity, background processing, and a built-in keyboard guide.
+
+| Key | Action |
+| --- | --- |
+| `1`–`4` / `F1`–`F4` | Switch workspace; function keys also work while editing |
+| `Tab` / `Shift+Tab` | Focus the next / previous field |
+| `i` / `Enter` | Edit the focused field |
+| `Esc` | Finish editing or close a dialog |
+| `m` | Cycle encoding mode |
+| `x` | Cycle plasmid structure |
+| `Ctrl+R` / `F5` | Run |
+| `Ctrl+O` | Import a UTF-8 text or single-record FASTA file |
+| `Ctrl+S` / `F6` | Export; `Tab` cycles TXT, FASTA, JSON in the dialog |
+| `Ctrl+K` / `v` | Export / reveal generated split keys |
+| `d` / `s` | Send the result to Decode / Safety |
+| `PgUp` / `PgDn` | Scroll the result |
+| `Ctrl+U` | Clear the field being edited |
+| `?` | Show keyboard help |
+| `q` / `Ctrl+Q` / `F10` | Quit; `Ctrl+C` also works while editing |
+
+Letter shortcuts apply in normal mode. While editing, letters are input, Enter inserts a newline in the message field, and arrows/Home/End move the cursor. Bracketed paste is supported.
+
+Start with `i`, type a message, and press `Ctrl+R`. Press `Esc` if necessary, then `d` and `Ctrl+R` to decode the result.
+
+## Scriptable commands
+
+The same operations remain available for shell pipelines:
+
+```bash
 bi0cyph3r encode "Hello World"
-bi0cyph3r decode "TACATCTTTCGATCGATCGG"
-bi0cyph3r encode "Secret" --mode splitkey   # Returns K1, K2 — save K1, escrow K2
-bi0cyph3r safety "ATCGATCGATCG"
-
-# Start server + Web UI
-./run-server.sh
+bi0cyph3r encode "Hello World" | bi0cyph3r decode -
+bi0cyph3r encode --input message.txt --save sequence.dna
+bi0cyph3r decode --input sequence.dna
+bi0cyph3r safety ATCGATCGATCG --output json
+bi0cyph3r plasmid "Hello" --name sample --save sample.fasta
+bi0cyph3r plasmid "Hello" --structure marked --output json
+bi0cyph3r --help
 ```
 
-### Option 2: Offline mode (no server, no network)
+Use `--mode basic|nanopore|secure|splitkey`. Supply secure-mode passwords through the masked TUI field or `BIOCYPHER_PASSWORD`; `--password` is also supported. The CLI accepts piped input, `--input FILE`, or a positional argument.
 
-**Single HTML file** — Save and open anywhere. Basic encode/decode only. No data leaves your device.
+Split-key encoding requires an explicit key export:
 
 ```bash
-# Save and open in a browser (file:// or served)
-open biocypher-rust-solana/static/offline.html
-# Or copy the file and open it on any machine
+bi0cyph3r encode "Secret" --mode splitkey --keys-output keys.json --save secret.dna
+bi0cyph3r decode --input secret.dna --mode splitkey --k1 BASE64_K1 --k2 BASE64_K2
 ```
 
-**CLI** — Fully offline for Basic mode:
+Decoding also accepts `BIOCYPHER_K1` and `BIOCYPHER_K2`. Ordinary TXT, FASTA, and JSON result exports omit split keys. The explicit key bundle contains both keys; store them separately afterward. The TUI asks before quitting or replacing a result containing unexported keys.
+
+Files are created without overwriting existing paths, with owner-only permissions on Unix. Session data is held in memory and disappears on exit unless exported. Messages are limited to 4 KiB and sequence imports to 256 KiB, keeping generated DNA within the import limit. DNA input accepts whitespace and lowercase bases, but rejects invalid symbols and multiple FASTA records.
+
+## Modes and limits
+
+- Basic maps UTF-8 bytes to A/T/C/G. It is encoding, not encryption.
+- Nanopore uses the existing triplet, parity, redundancy, and padding format.
+- Secure retains the existing AES-256-CBC/PBKDF2 format.
+- Split Key retains the existing encryption and two-share key format.
+
+The existing CBC formats do not provide authenticated encryption. The safety report is a local heuristic, not a biological safety certification. Plasmid assembly retains the former designer's sequence parts; it does not validate a complete expression-ready vector.
+
+## Optional Solana attestations
+
+The default build is fully local. The existing Solana client and on-chain program remain available as an optional feature:
+
+```bash
+cd biocypher-rust-solana
+cargo build --release --features solana --bin bi0cyph3r
+SOLANA_RPC_URL=http://127.0.0.1:8899 \
+SOLANA_KEYPAIR_PATH=/path/to/id.json \
+./target/release/bi0cyph3r encode "Hello" --attest
+```
+
+`BIOCYPHER_STORAGE_PROGRAM_ID` can override the program ID. Explicit `--attest` submits a transaction using the local keypair; the program must already be deployed and the payer funded. No attestation is submitted by the TUI.
+
+## Docker
+
+```bash
+docker compose build biocypher
+docker compose run --rm --user "$(id -u):$(id -g)" biocypher
+docker compose run --rm --user "$(id -u):$(id -g)" biocypher encode "Hello"
+```
+
+Compose mounts this checkout at `/data` for importing and exporting files. Running with your user ID keeps exported files owned by you. There are no exposed ports.
+
+## Development
 
 ```bash
 cd biocypher-rust-solana
-cargo build --release --bin bi0cyph3r
-
-./target/release/bi0cyph3r encode "Hello World" --mode basic
-./target/release/bi0cyph3r decode "TACATCTTTCGATCGATCGG" --mode basic
-./target/release/bi0cyph3r safety "ATCGATCGATCG"
+cargo fmt --all --check
+cargo test --locked --workspace
+cargo clippy --locked --workspace --all-targets -- -D warnings
+cargo check --locked --features solana --bin bi0cyph3r
 ```
 
-### Option 3: Web UI + API Server
+The Rust package retains its historical `biocypher-backend` library name. `backend/src/tui/` contains the application, editor, and rendering; `workbench.rs` is shared by the TUI and CLI; `dna/`, `safety/`, and `plasmid.rs` provide local operations. The `biocypher/` directory retains legacy Python codecs and CLI tooling.
 
-```bash
-./run-server.sh
-# or: cd biocypher-rust-solana && cargo run
-```
+The former Actix API, Rust HTML frontend, Flask app, browser wallet, in-memory escrow server, and manufacturer forwarding endpoints have been removed. Export files for external delivery; no automatic escrow or manufacturer transmission is performed. Historical planning documents are retained as archives, not current setup instructions.
 
-- **API**: http://127.0.0.1:8080
-- **Web UI**: http://127.0.0.1:8080/app/
-
-**Web UI tabs**: Encode, Decode, Safety Screen, Plasmid (designer with linear/circular view, export, secure transmission)
-
-### Option 3b: Docker
-
-```bash
-docker compose up backend
-```
-
-- **API**: http://127.0.0.1:8080
-- **Web UI**: http://127.0.0.1:8080/app/
-
-### Option 4: Arcium MPC (Secure Encryption)
-
-Uses Solana CLI keypair — no Phantom wallet needed.
-
-```bash
-# 1. Build MXE (one-time)
-cd biocypher-mxe
-yarn install
-arcium build
-
-# 2. Start Arcium localnet (in one terminal)
-arcium test   # or: arcium localnet
-
-# 3. Start Arcium service (in another terminal)
-./run-arcium-service.sh
-
-# 4. Start backend + Web UI
-./run-server.sh
-```
-
-Then open http://127.0.0.1:8080/app/ and toggle **Arcium MPC** on. When connected, encode/decode use MPC — message stays encrypted end-to-end.
-
-**Limits**: Arcium encode max 4 chars, decode exactly 16 bases.
-
-**Secure transmission**: With Arcium connected, design a plasmid in the Plasmid tab, then click **Transmit to Manufacturer**. Enter a transmission password (share with the manufacturer for decryption) and optionally the manufacturer API URL. The FASTA + instructions are encrypted (AES-256-GCM) and forwarded via the Arcium service. Set `MANUFACTURER_API_URL` in the Arcium service for production.
-
-**Troubleshooting `arcium build` — edition2024 / Rust version:**
-
-If you see `feature 'edition2024' is required` or `Failed to build Anchor program`, Arcium’s dependencies need Rust 1.85+. Do both:
-
-1. **Upgrade Solana/Agave** to 3.1.x (platform-tools v1.52 with Rust 1.89):
-   ```bash
-   sh -c "$(curl -sSfL https://release.anza.xyz/v3.1.8/install)"
-   export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
-   ```
-
-2. **Install Rust 1.89** for `cargo metadata` (host dependency resolution):
-   ```bash
-   rustup install 1.89.0
-   ```
-   The `biocypher-mxe/rust-toolchain.toml` file pins Rust 1.89 for this project.
-
-Then run `arcium build` from `biocypher-mxe/`.
-
-### Run the Arcium MXE (MPC Encrypted Encoding)
-
-```bash
-# Install Arcium (one-time)
-curl --proto '=https' --tlsv1.2 -sSfL https://install.arcium.com/ | bash
-
-# Build and test the MXE
-cd biocypher-mxe
-yarn install
-arcium build
-arcium test
-```
-
----
-
-## API Examples
-
-**Encode (Basic mode):**
-```bash
-curl -X POST http://127.0.0.1:8080/api/encode \
-  -H "Content-Type: application/json" \
-  -d '{"message":"Hello World","mode":"basic"}'
-```
-
-**Encode (Nanopore mode):**
-```bash
-curl -X POST http://127.0.0.1:8080/api/encode \
-  -H "Content-Type: application/json" \
-  -d '{"message":"Hello World","mode":"nanopore"}'
-```
-
-**Encode (Secure mode — requires password):**
-```bash
-curl -X POST http://127.0.0.1:8080/api/encode \
-  -H "Content-Type: application/json" \
-  -d '{"message":"Secret","mode":"secure","password":"YourSecurePass123!"}'
-```
-
-**Encode (Split Key mode — returns K1, K2, transmission_id):**
-```bash
-curl -X POST http://127.0.0.1:8080/api/encode \
-  -H "Content-Type: application/json" \
-  -d '{"message":"Secret","mode":"splitkey"}'
-# Response includes dna_sequence, k1_base64, k2_base64, transmission_id
-```
-
-**Decode (Split Key mode — requires K1 and K2):**
-```bash
-curl -X POST http://127.0.0.1:8080/api/decode \
-  -H "Content-Type: application/json" \
-  -d '{"sequence":"ATCGATCG...","mode":"splitkey","k1_base64":"<base64>","k2_base64":"<base64>"}'
-```
-
-**Encode with Solana attestation** (requires deployed biocypher-storage + env configured):
-```bash
-curl -X POST http://127.0.0.1:8080/api/encode \
-  -H "Content-Type: application/json" \
-  -d '{"message":"Hello","mode":"basic","store_on_chain":true}'
-# Response includes transaction_signature when successful
-```
-
-**Decode:**
-```bash
-curl -X POST http://127.0.0.1:8080/api/decode \
-  -H "Content-Type: application/json" \
-  -d '{"sequence":"TACATCTTTCGATCGATCGG","mode":"basic"}'
-```
-
-**Safety Screen:**
-```bash
-curl -X POST http://127.0.0.1:8080/api/safety-screen \
-  -H "Content-Type: application/json" \
-  -d '{"dna_sequence":"ATCGATCGATCGATCG"}'
-```
-
-**Safety Screen with Solana verification:**
-```bash
-curl -X POST http://127.0.0.1:8080/api/safety-screen \
-  -H "Content-Type: application/json" \
-  -d '{"dna_sequence":"ATCGATCGATCGATCG","verify_on_chain":true}'
-```
-
-**Arcium MXE Info:**
-```bash
-curl http://127.0.0.1:8080/api/arcium-info
-```
-
-**Arcium service** (when running): encode-mpc, decode-mpc, transmit-secure, escrow-store, escrow-retrieve, transmit-split-key — see [biocypher-arcium-service/README.md](biocypher-arcium-service/README.md).
-
----
-
-## Project Structure
-
-```
-biocypher/
-├── biocypher-rust-solana/       # Rust backend (Actix-web)
-│   ├── backend/
-│   │   └── src/
-│   │       ├── api/             # HTTP endpoints
-│   │       ├── arcium/          # Arcium integration info
-│   │       ├── dna/             # Basic, Nanopore, Secure, Split Key crypto
-│   │       ├── safety/          # Pathogen & sequence screening
-│   │       └── main.rs
-│   ├── static/                 # Web UI (index.html, offline.html)
-│   └── Cargo.toml
-│
-├── biocypher-mxe/               # Arcium MXE (MPC encrypted DNA)
-│   ├── programs/
-│   │   └── biocypher-mxe/       # Solana program + Arcium instructions
-│   ├── encrypted-ixs/           # Arcis circuits (encode_basic, decode_basic)
-│   ├── tests/                   # TypeScript tests
-│   ├── Arcium.toml
-│   └── Anchor.toml
-│
-├── biocypher-arcium-service/    # Node.js Arcium proxy (Solana CLI keypair)
-│   ├── src/
-│   │   ├── index.ts             # Express server (encode, decode, transmit-secure, escrow, transmit-split-key)
-│   │   └── arcium-client.ts     # Arcium encode/decode
-│   └── package.json
-│
-├── biocypher-programs/          # Solana attestation program (Phase 2–3)
-│   ├── programs/
-│   │   └── biocypher-storage/   # record_encode, record_decode, record_safety
-│   ├── tests/
-│   ├── Anchor.toml
-│   └── Cargo.toml
-│
-├── biocypher/                   # Python reference implementation
-│   ├── dna_crypto.py
-│   ├── nanopore_dna_crypto.py
-│   ├── secure_nanopore_dna_crypto.py
-│   ├── safety_screener.py
-│   └── PROTOCOL_SPECIFICATION.md
-│
-├── docs/
-│   ├── ARCIUM_EDUCATIONAL_GUIDE.md   # Arcium concepts & workflow
-│   ├── QUICK_REFERENCE.md
-│   └── SUMMARY.md
-│
-├── tasks/
-├── BUILD_PLAN.md
-├── LICENSE
-└── README.md
-```
-
----
-
-## Arcium MXE Details
-
-```
-  ┌──────────────────────────────────────────────────────────────-┐
-  │  BI0CYPH3R MXE — MPC EXECUTION ENVIRONMENT                    │
-  ├──────────────────────────────────────────────────────────────-┤
-  │                                                               │
-  │  Confidential Instructions (Arcis):                           │
-  │  • encode_basic  — 4 bytes → 16 DNA bases (0=A, 1=T, 2=C, 3=G)│
-  │  • decode_basic — 16 DNA bases → 4 bytes                      │
-  │                                                               │
-  │  Crypto: Rescue cipher + x25519 ECDH                          │
-  │  Trust:  Cerberus (dishonest majority)                        │
-  │                                                               │
-  └──────────────────────────────────────────────────────────────-┘
-```
-
-| Instruction | Input | Output |
-|-------------|-------|--------|
-| `encode_basic` | 4 encrypted bytes | 16 encrypted DNA bases |
-| `decode_basic` | 16 encrypted DNA bases | 4 encrypted bytes |
-
-See [docs/ARCIUM_EDUCATIONAL_GUIDE.md](docs/ARCIUM_EDUCATIONAL_GUIDE.md) for full documentation.
-
----
-
-## API Reference
-
-### Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/` | API info |
-| GET | `/health` | Health check |
-| POST | `/api/encode` | Encode message to DNA |
-| POST | `/api/decode` | Decode DNA to message |
-| POST | `/api/safety-screen` | Screen DNA sequence for safety |
-| GET | `/api/arcium-info` | Arcium MXE integration info |
-
-### Encode Request
-
-```json
-{
-  "message": "Hello",
-  "mode": "basic",
-  "password": null,
-  "store_on_chain": false,
-  "escrow_url": null
-}
-```
-
-- `mode`: `"basic"` | `"nanopore"` | `"secure"` | `"splitkey"`
-- `password`: Required for `secure` mode
-- `store_on_chain`: Optional — store attestation on Solana (requires `SOLANA_RPC_URL`, `SOLANA_KEYPAIR_PATH`, deployed `biocypher-storage` program)
-- `escrow_url`: Optional — for `splitkey` mode, URL to auto-send K2
-
-### Encode Response
-
-```json
-{
-  "dna_sequence": "TACATCTTTCGATCGATCGG",
-  "transaction_signature": null,
-  "stats": {
-    "length": 20,
-    "bases": {"a": 4, "t": 7, "c": 5, "g": 4},
-    "gc_content": 45.0
-  },
-  "k1_base64": null,
-  "k2_base64": null,
-  "transmission_id": null
-}
-```
-
-For `splitkey` mode, `k1_base64`, `k2_base64`, and `transmission_id` are populated. Save K1 securely; store K2 in escrow via `POST /escrow-store`.
-
-### Decode Request (Split Key)
-
-For `mode: "splitkey"`, include `k1_base64` and `k2_base64` (or fetch K2 from escrow via `POST /escrow-retrieve` using `transmission_id`).
-
----
-
-## Technology Stack
-
-### Rust Backend
-
-- **actix-web** 4.4 — Web framework
-- **tokio** 1.35 — Async runtime
-- **aes** + **cbc** — AES-256-CBC encryption (Secure mode)
-- **pbkdf2** — Key derivation (100,000 iterations)
-- **base64** — Crypto data serialization
-- **regex** — Pattern matching (safety screener)
-
-### Arcium MXE
-
-- **Arcium** 0.8 — MPC encrypted computation
-- **Arcis** — Rust DSL for confidential instructions
-- **Anchor** 0.32 — Solana program framework
-- **Solana** — Orchestration & verification
-
-### Solana Attestation (Phase 2–3)
-
-- **biocypher-storage** — On-chain attestation for encode, decode, safety (in `biocypher-programs/`)
-- **Backend–Solana** — `store_on_chain`, `decode_on_chain`, `verify_on_chain` when env configured
-
-**Env vars** (optional; if unset, on-chain features are no-op):
-
-- `SOLANA_RPC_URL` — Default: `http://127.0.0.1:8899` (localnet)
-- `SOLANA_KEYPAIR_PATH` — Default: `~/.config/solana/id.json`
-- `BIOCYPHER_STORAGE_PROGRAM_ID` — From `anchor keys list` in `biocypher-programs/`
-
-**Deploy**: `cd biocypher-programs && anchor build && anchor deploy`
-
----
-
-## Solana On-Chain Attestation (Phase 2–3)
-
-Optional blockchain verification for encode, decode, and safety operations. When enabled, the backend records attestations on Solana — proving that an operation occurred without storing full sequences on-chain (only SHA-256 hashes).
-
-### Architecture
-
-- **Rust backend** performs all DNA computation off-chain (encode, decode, safety screening)
-- **biocypher-storage** Solana program stores attestation records (owner, mode, sequence hash, timestamp)
-- **PDAs** (Program Derived Addresses) ensure one record per (owner, sequence_hash) pair
-- **Graceful degradation** — if Solana is not configured, APIs work normally and return `transaction_signature: null`
-
-### Program Instructions
-
-| Instruction | Purpose |
-|-------------|---------|
-| `record_encode` | Attest that a message was encoded to DNA |
-| `record_decode` | Attest that DNA was decoded to a message |
-| `record_safety` | Attest that a sequence was safety-screened |
-
-### Setup
-
-1. **Build and deploy** the storage program:
-   ```bash
-   cd biocypher-programs
-   anchor build
-   anchor deploy   # Requires Solana validator (localnet/devnet)
-   anchor keys list   # Get program ID for BIOCYPHER_STORAGE_PROGRAM_ID
-   ```
-
-2. **Configure backend** (optional env vars):
-   ```bash
-   export SOLANA_RPC_URL="http://127.0.0.1:8899"   # or devnet RPC
-   export SOLANA_KEYPAIR_PATH="$HOME/.config/solana/id.json"
-   export BIOCYPHER_STORAGE_PROGRAM_ID="FtXEkJEXm8bJbEc9DHPwuV8W7C9PLdszt8vnzsDgk9Rj"
-   ```
-
-3. **Web UI** — Check "Store attestation on Solana" (Encode), "Record decode on Solana" (Decode), or "Verify on Solana" (Safety). When a transaction is recorded, the response includes a Solana Explorer link.
-
-### Security: Never Commit Keys
-
-**Do not commit** the following to version control:
-
-- `*-keypair.json` (Solana program deploy keypairs)
-- `id.json` (Solana wallet keypair)
-- `.env` files with secrets
-
-These are listed in `.gitignore`. The program keypair in `biocypher-programs/target/deploy/` is generated by `anchor build` and is ignored via `target/` and `*-keypair.json`.
-
----
-
-## DNA Encoding Modes
-
-### Basic Mode
-
-- **Mapping**: 00→A, 01→T, 10→C, 11→G
-- **Format**: Raw DNA, no markers
-- **Speed**: ~10ms
-
-### Nanopore Mode
-
-- **Encoding**: 9-bit parity + triple redundancy + triplet encoding
-- **Markers**: `ATCGATCG` (start) / `CGATATCG` (stop)
-- **Features**: Error correction, homopolymer avoidance, GC balancing
-- **Speed**: ~30ms
-
-### Secure Mode
-
-- **Encryption**: AES-256-CBC with PBKDF2 key derivation
-- **Format**: Base64(ciphertext) encoded as DNA + markers
-- **Markers**: Same as Nanopore
-- **Speed**: ~20ms
-
-### Split Key Mode
-
-- **Encryption**: AES-256-CBC with random key K split into K1 (user) and K2 (escrow) via XOR
-- **Format**: Same as Secure (base64 ciphertext → DNA + markers)
-- **Key split**: K1 = random 32 bytes; K2 = K XOR K1
-- **Output**: `dna_sequence`, `k1_base64`, `k2_base64`, `transmission_id`
-- **Decode**: Requires both K1 and K2 (from user + escrow or both pasted)
-- **Speed**: ~25ms
-
----
-
-## Safety Screener
-
-The safety module analyzes DNA sequences for:
-
-- **Pathogen signatures** — Viral polymerase, toxins, antibiotic resistance
-- **Natural occurrence** — Housekeeping genes, E. coli, human genome matches
-- **Sequence characteristics** — GC content, homopolymers, ORFs, repetitive elements
-- **Risk assessment** — Safe / Caution / Unsafe
-
----
-
-## Plasmid Designer
-
-Design plasmids from messages and export for DNA synthesis:
-
-- **Simple mode** — Payload only (encoded message as DNA)
-- **Expression mode** — Optional eGFP fluorescence cassette, decoding markers (flanking sequences for payload extraction)
-- **Visualization** — SeqViz circular + linear view with annotations
-- **Export** — FASTA, plain TXT, Instructions JSON
-- **Decode** — "Extract payload from plasmid" option to decode full expression plasmids
-
----
-
-## Split Key Mode — Eliminating the Single Point of Failure
-
-The weakest link in plasmid-based data storage is **ordering and retrieval**: when you send a sequence to a DNA manufacturer or receive a shipment, a single interception or compromise can expose the full message. **Split Key** mode addresses this by ensuring no single party ever has both the ciphertext and the decryption key.
-
-### Architecture
-
-```
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│  ENCODE                                                                         
-│  Message → AES-256-CBC(K) → ciphertext → DNA encoding → markers                 │
-│  K split: K1 = random, K2 = K XOR K1                                            │
-│  Output: dna_sequence, k1_base64 (user keeps), k2_base64 (escrow)               │
-└─────────────────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────────────────────--┐
-│  TRANSMISSION                                                                     │
-│  Provider A (DNA Manufacturer): Receives FASTA sequence only — ciphertext-as-DNA  │
-│  Provider B (Key Escrow):       Receives K2 only — no DNA, no plaintext           │
-│  User:                          Keeps K1 locally                                  │
-│  → No single party can decrypt                                                    │
-└─────────────────────────────────────────────────────────────────────────────────--┘
-
-┌───────────────────────────────────────────────────────────────────────────────── ┐
-│  DECODE                                                                          │
-│  Sequence plasmid → extract payload DNA → decode to base64 → parse crypto data   │
-│  Fetch K2 from escrow (or provide directly)                                      │
-│  K = K1 XOR K2 → AES decrypt → plaintext                                         │
-└───────────────────────────────────────────────────────────────────────────────── ┘
-```
-
-### Security Properties
-
-| Threat | Mitigation |
-|--------|------------|
-| Manufacturer compromised | Has ciphertext only; no key |
-| Key escrow compromised | Has K2 only; needs K1 + ciphertext |
-| Transmission intercepted | Attacker gets ciphertext or K2, not both |
-| Physical plasmid intercepted | Attacker gets ciphertext only |
-
-### Usage
-
-**CLI:**
-```bash
-# Encode — save K1, escrow K2
-bi0cyph3r encode "Secret message" --mode splitkey
-
-# Decode — provide K1 and K2
-bi0cyph3r decode "ATCGATCG..." --mode splitkey --k1 "<base64>" --k2 "<base64>"
-
-# Plasmid with split key
-bi0cyph3r plasmid "Secret" --mode splitkey --output json
-```
-
-**Web UI:** Select **Split Key** in Encode/Decode/Plasmid tabs. After encoding, use **Save K1** and **Escrow K2**. For decode, paste K1 and either paste K2 or fetch from escrow by transmission ID.
-
-**API:** `POST /api/encode` with `mode: "splitkey"` returns `dna_sequence`, `k1_base64`, `k2_base64`, `transmission_id`. `POST /api/decode` with `mode: "splitkey"` requires `k1_base64` and `k2_base64`.
-
-### Arcium Service Endpoints
-
-| Endpoint | Purpose |
-|----------|---------|
-| `POST /escrow-store` | Store K2 by transmission_id |
-| `POST /escrow-retrieve` | Fetch K2 by transmission_id |
-| `POST /transmit-split-key` | Send FASTA directly to manufacturer (no password) |
-
-For Split Key plasmids, **Transmit to Manufacturer** uses `transmit-split-key` — the sequence is sent as-is (it already encodes ciphertext). The manufacturer synthesizes DNA; they never receive a decryption key.
-
----
-
-## Secure Transmission to DNA Manufacturers
-
-Two transmission flows are supported:
-
-### Password-based (Secure mode)
-
-- **Encryption** — AES-256-GCM, PBKDF2-SHA256 (100k iterations)
-- **Flow** — Design plasmid → Transmit (Arcium connected) → Enter password → Encrypted payload forwarded to manufacturer API
-- **Manufacturer** — Receives encrypted blob; decrypts with shared password
-- **Endpoint** — `POST /transmit-secure`
-
-### Split Key (no password)
-
-- **Flow** — Design plasmid (Split Key mode) → Transmit → FASTA sent directly to manufacturer
-- **Manufacturer** — Receives sequence; synthesizes DNA (ciphertext); never receives key
-- **Endpoint** — `POST /transmit-split-key`
-
-**Config** — `MANUFACTURER_API_URL` env var or per-request `manufacturer_url`
-
-See [biocypher-arcium-service/README.md](biocypher-arcium-service/README.md) for endpoint details.
-
----
-
-## Install (Release Binary)
-
-```bash
-./install.sh
-# Or manually:
-cd biocypher-rust-solana && cargo build --release --bin bi0cyph3r
-cp target/release/bi0cyph3r ~/.local/bin/
-```
-
-## Testing
-
-**Backend:**
-```bash
-cd biocypher-rust-solana
-cargo test
-```
-
-**Arcium MXE:**
-```bash
-cd biocypher-mxe
-arcium test
-```
-
----
-
-## Roadmap
-
-| Phase | Focus | Status |
-|-------|-------|--------|
-| **1** | Rust backend (all 3 DNA modes) | ✅ Complete |
-| **1.5** | Arcium MXE (MPC encode/decode) | ✅ Complete |
-| **1.6** | Plasmid Designer, Expression mode, Secure transmission | ✅ Complete |
-| **2** | Solana smart programs (biocypher-storage attestation) | ✅ Complete |
-| **3** | Backend–Solana integration (store_on_chain, decode_on_chain, verify_on_chain) | ✅ Complete |
-| **4** | Frontend updates (Solana checkboxes, tx links) | ✅ Complete |
-| **5** | Testing & hardening | ⏳ Planned |
-| **6** | Deployment | ⏳ Planned |
-
-See [BUILD_PLAN.md](BUILD_PLAN.md) for details.
-
----
-
-## Documentation
-
-- [BUILD_PLAN.md](BUILD_PLAN.md) — Phased implementation plan
-- [docs/ARCIUM_EDUCATIONAL_GUIDE.md](docs/ARCIUM_EDUCATIONAL_GUIDE.md) — Arcium concepts, MPC lifecycle, Arcis
-- [biocypher-arcium-service/README.md](biocypher-arcium-service/README.md) — Arcium service, transmit-secure endpoint
-- [docs/QUICK_REFERENCE.md](docs/QUICK_REFERENCE.md) — Developer quick reference
-- [docs/SUMMARY.md](docs/SUMMARY.md) — Executive summary
-- [biocypher/PROTOCOL_SPECIFICATION.md](biocypher/PROTOCOL_SPECIFICATION.md) — Protocol spec
-
----
-
-## License
-
-This project is licensed under the **MIT License** — see [LICENSE](LICENSE) for details.
-
-The Python reference implementation in `biocypher/` may have different licensing terms; see `biocypher/LICENSE`.
-
----
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing`)
-5. Open a Pull Request
-
----
-
-```
-  ╔═══════════════════════════════════════════════════════════════----------╗
-  ║  Bi0cyph3r — DNA cryptography for the modern stack                      ║
-  ║  Rust • Solana • Arcium MPC • Split Key • Plasmid Designer • Secure Tx  ║
-  ╚═══════════════════════════════════════════════════════════════----------╝
-```
+[MIT license](LICENSE)

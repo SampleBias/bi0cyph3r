@@ -1,5 +1,7 @@
 # BioCypher Rust + Solana Migration - Task Tracking
 
+> Historical document: web/Flask/API instructions below describe the retired architecture. See the [current terminal-only README](../../README.md) for setup and usage.
+
 ## Phase 1: Rust Backend Foundation (Week 1-2)
 
 ### Project Setup

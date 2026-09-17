@@ -1,5 +1,7 @@
 # Testing Guide for bi0cyph3r
 
+> Historical document: web/Flask/API instructions below describe the retired architecture. See the [current terminal-only README](../README.md) for setup and usage.
+
 ## Quick Start Testing
 
 ### 1. Install Dependencies (if not already done)
@@ -207,4 +209,3 @@ python test_dna_crypto.py
 python test_nanopore_dna_crypto.py
 python test_secure_nanopore_dna_crypto.py
 ```
-

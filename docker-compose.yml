@@ -1,11 +1,14 @@
-# Bi0cyph3r - Docker Compose
-# Backend API + Web UI
+# Run interactively: docker compose run --rm --user "$(id -u):$(id -g)" biocypher
 services:
-  backend:
+  biocypher:
     build:
       context: ./biocypher-rust-solana
       dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
+    stdin_open: true
+    tty: true
     environment:
-      - BIND_ADDRESS=0.0.0.0:8080
+      TERM: xterm-256color
+      COLORTERM: truecolor
+    working_dir: /data
+    volumes:
+      - .:/data

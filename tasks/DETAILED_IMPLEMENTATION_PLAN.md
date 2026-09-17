@@ -1,5 +1,7 @@
 # BioCypher Rust + Solana Migration - Implementation Plan
 
+> Historical document: web/Flask/API instructions below describe the retired architecture. See the [current terminal-only README](../README.md) for setup and usage.
+
 ## Executive Summary
 
 This document provides a detailed technical plan for converting the BioCypher DNA cryptography system from Python/Flask to Rust backend services with Solana blockchain integration using a **hybrid architecture**.

@@ -4,7 +4,7 @@
 //! Ported from Python: biocypher/nanopore_dna_crypto.py
 
 use crate::dna::markers;
-use crate::dna::traits::{DNACoder, SequenceStats, SequenceStatistics};
+use crate::dna::traits::{DNACoder, SequenceStatistics, SequenceStats};
 use crate::error::{DNACryptoError, Result};
 use regex::Regex;
 
@@ -94,12 +94,7 @@ impl NanoporeDNACrypto {
         }
 
         // Step 5: Add nanopore markers
-        dna = format!(
-            "{}{}{}",
-            markers::START_MARKER,
-            dna,
-            markers::STOP_MARKER
-        );
+        dna = format!("{}{}{}", markers::START_MARKER, dna, markers::STOP_MARKER);
 
         Ok(dna)
     }
@@ -149,14 +144,14 @@ impl NanoporeDNACrypto {
     fn add_error_correction(binary: &str) -> String {
         binary
             .chars()
-            .flat_map(|c| std::iter::repeat(c).take(Self::ERROR_CORRECTION_REPEATS))
+            .flat_map(|c| std::iter::repeat_n(c, Self::ERROR_CORRECTION_REPEATS))
             .collect()
     }
 
     /// Convert binary to nanopore DNA (triplet encoding)
     fn binary_to_nanopore_dna(binary: &str) -> Result<String> {
         let mut padded = binary.to_string();
-        while padded.len() % 3 != 0 {
+        while !padded.len().is_multiple_of(3) {
             padded.push('0');
         }
 
@@ -177,7 +172,7 @@ impl NanoporeDNACrypto {
     fn has_homopolymers(sequence: &str) -> bool {
         for base in ['A', 'T', 'C', 'G'] {
             let pattern = format!("{}{{2,}}", base);
-            if Regex::new(&pattern).map_or(false, |re| re.is_match(sequence)) {
+            if Regex::new(&pattern).is_ok_and(|re| re.is_match(sequence)) {
                 return true;
             }
         }
@@ -241,7 +236,7 @@ impl NanoporeDNACrypto {
     fn correct_errors(binary: &str) -> Result<String> {
         let mut padded = binary.to_string();
         let r = Self::ERROR_CORRECTION_REPEATS;
-        while padded.len() % r != 0 {
+        while !padded.len().is_multiple_of(r) {
             padded.push('0');
         }
 
@@ -271,7 +266,7 @@ impl NanoporeDNACrypto {
 
     /// Binary to text with parity check (9 bits per char)
     fn binary_to_text_with_parity(binary: &str) -> Result<String> {
-        let mut text = String::new();
+        let mut bytes = Vec::new();
         let chars: Vec<char> = binary.chars().collect();
         for chunk in chars.chunks(9) {
             if chunk.len() == 9 {
@@ -284,12 +279,14 @@ impl NanoporeDNACrypto {
                 };
                 if parity_bit == expected_parity {
                     if let Ok(byte_val) = u8::from_str_radix(&data_bits, 2) {
-                        text.push(byte_val as char);
+                        bytes.push(byte_val);
                     }
                 }
             }
         }
-        Ok(text)
+        String::from_utf8(bytes).map_err(|e| {
+            DNACryptoError::DecodingFailed(format!("Decoded bytes are not UTF-8: {e}")).into()
+        })
     }
 }
 
@@ -315,14 +312,8 @@ mod tests {
 
     #[test]
     fn test_encode_decode_empty() {
-        assert_eq!(
-            NanoporeDNACrypto::encode_message("").unwrap(),
-            ""
-        );
-        assert_eq!(
-            NanoporeDNACrypto::decode_sequence("").unwrap(),
-            ""
-        );
+        assert_eq!(NanoporeDNACrypto::encode_message("").unwrap(), "");
+        assert_eq!(NanoporeDNACrypto::decode_sequence("").unwrap(), "");
     }
 
     #[test]

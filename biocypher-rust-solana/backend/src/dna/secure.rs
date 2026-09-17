@@ -5,13 +5,13 @@
 
 use crate::dna::basic::DNACrypto;
 use crate::dna::markers;
-use crate::dna::traits::{DNACoder, SequenceStats, SequenceStatistics};
+use crate::dna::traits::{DNACoder, SequenceStatistics, SequenceStats};
 use crate::error::{DNACryptoError, Result};
 use aes::Aes256;
-use cbc::{Decryptor, Encryptor};
-use cbc::cipher::{BlockDecryptMut, BlockEncryptMut, KeyIvInit};
+use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
 use cbc::cipher::block_padding::Pkcs7;
-use base64::{Engine as _, engine::general_purpose::STANDARD as BASE64};
+use cbc::cipher::{BlockDecryptMut, BlockEncryptMut, KeyIvInit};
+use cbc::{Decryptor, Encryptor};
 use pbkdf2::pbkdf2_hmac;
 use rand::RngCore;
 use sha2::Sha256;
@@ -104,12 +104,7 @@ impl SecureDNACrypto {
     /// Derive key from password using PBKDF2
     fn derive_key(password: &str, salt: &[u8]) -> [u8; Self::KEY_SIZE] {
         let mut key = [0u8; Self::KEY_SIZE];
-        pbkdf2_hmac::<Sha256>(
-            password.as_bytes(),
-            salt,
-            Self::PBKDF2_ITERATIONS,
-            &mut key,
-        );
+        pbkdf2_hmac::<Sha256>(password.as_bytes(), salt, Self::PBKDF2_ITERATIONS, &mut key);
         key
     }
 
@@ -167,11 +162,7 @@ impl SecureDNACrypto {
     }
 
     /// Serialize crypto data to base64 string (public for split_key reuse)
-    pub fn crypto_data_to_string(
-        encrypted_data: &[u8],
-        iv: &[u8],
-        salt: &[u8],
-    ) -> Result<String> {
+    pub fn crypto_data_to_string(encrypted_data: &[u8], iv: &[u8], salt: &[u8]) -> Result<String> {
         let mut combined = Vec::new();
         combined.extend_from_slice(&(salt.len() as u16).to_be_bytes());
         combined.extend_from_slice(salt);

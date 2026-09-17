@@ -3,7 +3,7 @@
 //! Simple binary-to-DNA mapping: 00=A, 01=T, 10=C, 11=G
 //! Ported from Python: biocypher/dna_crypto.py
 
-use crate::dna::traits::{DNACoder, SequenceStats, SequenceStatistics};
+use crate::dna::traits::{DNACoder, SequenceStatistics, SequenceStats};
 use crate::error::{DNACryptoError, Result};
 
 /// Basic DNA cryptography encoder/decoder
@@ -74,12 +74,7 @@ impl SequenceStats for DNACrypto {
 
 impl DNACrypto {
     /// DNA base encoding mapping
-    const DNA_ENCODE: [(u8, &str); 4] = [
-        (0b00, "A"),
-        (0b01, "T"),
-        (0b10, "C"),
-        (0b11, "G"),
-    ];
+    const DNA_ENCODE: [(u8, &str); 4] = [(0b00, "A"), (0b01, "T"), (0b10, "C"), (0b11, "G")];
 
     /// Convert text to binary representation
     ///
@@ -159,13 +154,13 @@ impl DNACrypto {
     /// Convert binary string to text
     ///
     /// Binary is processed in 8-bit chunks (bytes).
-    /// Only printable ASCII characters (32-126) are included.
+    /// Preserve UTF-8 and whitespace so imported text files round-trip intact.
     fn binary_to_text(binary: &str) -> Result<String> {
         if binary.is_empty() {
             return Ok(String::new());
         }
 
-        let mut text = String::new();
+        let mut bytes = Vec::new();
         let chars: Vec<char> = binary.chars().collect();
 
         for chunk in chars.chunks(8) {
@@ -174,14 +169,13 @@ impl DNACrypto {
                 let byte_val = u8::from_str_radix(&byte_str, 2)
                     .map_err(|e| DNACryptoError::InvalidBinary(e.to_string()))?;
 
-                // Only include printable ASCII (32-126)
-                if byte_val >= 32 && byte_val <= 126 {
-                    text.push(byte_val as char);
-                }
+                bytes.push(byte_val);
             }
         }
 
-        Ok(text)
+        String::from_utf8(bytes).map_err(|e| {
+            DNACryptoError::DecodingFailed(format!("Decoded bytes are not UTF-8: {e}")).into()
+        })
     }
 }
 
@@ -234,11 +228,10 @@ mod tests {
 
     #[test]
     fn test_newline_characters() {
-        // Basic mode uses printable ASCII (32-126); newline (10) is filtered on decode
         let original = "Line 1\nLine 2";
         let dna = DNACrypto::encode_message(original).unwrap();
         let decoded = DNACrypto::decode_sequence(&dna).unwrap();
-        assert_eq!("Line 1Line 2", decoded);
+        assert_eq!(original, decoded);
     }
 
     #[test]

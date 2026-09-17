@@ -1,7 +1,5 @@
 //! Error types for BioCypher backend
 
-use actix_web::http::StatusCode;
-use actix_web::HttpResponse;
 use thiserror::Error;
 
 /// Result type alias for BioCypher operations
@@ -17,10 +15,6 @@ pub enum BioCypherError {
     // Safety screener errors
     #[error("Safety screener error: {0}")]
     SafetyScreener(#[from] SafetyScreenerError),
-
-    // API errors
-    #[error("API error: {0}")]
-    Api(#[from] ApiError),
 
     // Validation errors
     #[error("Validation error: {0}")]
@@ -90,73 +84,6 @@ pub enum SafetyScreenerError {
 
     #[error("Analysis error: {0}")]
     AnalysisError(String),
-}
-
-/// API specific errors
-#[derive(Error, Debug)]
-pub enum ApiError {
-    #[error("Request error: {0}")]
-    Request(String),
-
-    #[error("Response error: {0}")]
-    Response(String),
-
-    #[error("Rate limit exceeded")]
-    RateLimitExceeded,
-
-    #[error("Unauthorized")]
-    Unauthorized,
-
-    #[error("Forbidden")]
-    Forbidden,
-
-    #[error("Not found: {0}")]
-    NotFound(String),
-
-    #[error("Conflict: {0}")]
-    Conflict(String),
-}
-
-impl actix_web::error::ResponseError for BioCypherError {
-    fn error_response(&self) -> HttpResponse {
-        HttpResponse::build(self.status_code()).json(serde_json::json!({
-            "error": self.to_string(),
-            "error_type": self.error_type()
-        }))
-    }
-
-    fn status_code(&self) -> StatusCode {
-        match self {
-            BioCypherError::DNACrypto(_) => StatusCode::BAD_REQUEST,
-            BioCypherError::SafetyScreener(_) => StatusCode::BAD_REQUEST,
-            BioCypherError::Api(ApiError::Request(_)) => StatusCode::BAD_REQUEST,
-            BioCypherError::Api(ApiError::Response(_)) => StatusCode::BAD_REQUEST,
-            BioCypherError::Api(ApiError::RateLimitExceeded) => StatusCode::TOO_MANY_REQUESTS,
-            BioCypherError::Api(ApiError::Unauthorized) => StatusCode::UNAUTHORIZED,
-            BioCypherError::Api(ApiError::Forbidden) => StatusCode::FORBIDDEN,
-            BioCypherError::Api(ApiError::NotFound(_)) => StatusCode::NOT_FOUND,
-            BioCypherError::Api(ApiError::Conflict(_)) => StatusCode::CONFLICT,
-            BioCypherError::Validation(_) => StatusCode::BAD_REQUEST,
-            BioCypherError::Solana(_) => StatusCode::INTERNAL_SERVER_ERROR,
-            BioCypherError::Io(_) => StatusCode::INTERNAL_SERVER_ERROR,
-            BioCypherError::Internal(_) => StatusCode::INTERNAL_SERVER_ERROR,
-        }
-    }
-}
-
-impl BioCypherError {
-    /// Get error type string
-    fn error_type(&self) -> &'static str {
-        match self {
-            BioCypherError::DNACrypto(_) => "dna_crypto",
-            BioCypherError::SafetyScreener(_) => "safety_screener",
-            BioCypherError::Api(_) => "api",
-            BioCypherError::Validation(_) => "validation",
-            BioCypherError::Solana(_) => "solana",
-            BioCypherError::Io(_) => "io",
-            BioCypherError::Internal(_) => "internal",
-        }
-    }
 }
 
 #[cfg(test)]

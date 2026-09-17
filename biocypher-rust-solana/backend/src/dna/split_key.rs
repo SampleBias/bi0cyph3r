@@ -7,9 +7,9 @@
 use crate::dna::basic::DNACrypto;
 use crate::dna::markers;
 use crate::dna::secure::SecureDNACrypto;
-use crate::dna::traits::{DNACoder, SequenceStats, SequenceStatistics};
+use crate::dna::traits::{DNACoder, SequenceStatistics, SequenceStats};
 use crate::error::{DNACryptoError, Result};
-use base64::{Engine as _, engine::general_purpose::STANDARD as BASE64};
+use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
 use rand::RngCore;
 
 /// Split Key DNA cryptography
@@ -49,12 +49,10 @@ impl SplitKeyDNACrypto {
         rand::thread_rng().fill_bytes(&mut salt);
 
         // Encrypt with K
-        let ciphertext =
-            SecureDNACrypto::encrypt_with_key(message.as_bytes(), &k, &iv)?;
+        let ciphertext = SecureDNACrypto::encrypt_with_key(message.as_bytes(), &k, &iv)?;
 
         // Serialize to base64 (same format as Secure mode)
-        let crypto_string =
-            SecureDNACrypto::crypto_data_to_string(&ciphertext, &iv, &salt)?;
+        let crypto_string = SecureDNACrypto::crypto_data_to_string(&ciphertext, &iv, &salt)?;
 
         // Encode to DNA
         let dna_sequence = DNACrypto::encode_message(&crypto_string)?;
@@ -76,11 +74,7 @@ impl SplitKeyDNACrypto {
             k2[i] = k[i] ^ k1[i];
         }
 
-        Ok((
-            result,
-            BASE64.encode(&k1),
-            BASE64.encode(&k2),
-        ))
+        Ok((result, BASE64.encode(k1), BASE64.encode(k2)))
     }
 
     /// Decode sequence with split keys K1 and K2.
@@ -162,7 +156,7 @@ mod tests {
     fn test_wrong_k2_fails() {
         let original = "secret";
         let (dna, k1, _k2) = SplitKeyDNACrypto::encode_with_split_keys(original).unwrap();
-        let wrong_k2 = BASE64.encode(&[0u8; 32]);
+        let wrong_k2 = BASE64.encode([0u8; 32]);
         let result = SplitKeyDNACrypto::decode_with_split_keys(&dna, &k1, &wrong_k2);
         assert!(result.is_err());
     }

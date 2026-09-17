@@ -4,10 +4,11 @@
 //! Ported from Python: biocypher/safety_screener.py
 
 use crate::dna::traits::SequenceStatistics;
-use crate::error::{SafetyScreenerError as Error, Result};
+use crate::error::{Result, SafetyScreenerError as Error};
 use crate::models::*;
 
 /// DNA Safety Screening System
+#[derive(Default)]
 pub struct DNASafetyScreener;
 
 impl DNASafetyScreener {
@@ -17,10 +18,7 @@ impl DNASafetyScreener {
     }
 
     /// Perform comprehensive safety screening
-    pub fn perform_comprehensive_screening(
-        &self,
-        sequence: &str,
-    ) -> Result<SafetyReport> {
+    pub fn perform_comprehensive_screening(&self, sequence: &str) -> Result<SafetyReport> {
         // Clean sequence
         let clean_sequence = self.clean_sequence(sequence)?;
 
@@ -30,11 +28,8 @@ impl DNASafetyScreener {
         let characteristics = self.analyze_characteristics(&clean_sequence);
 
         // Determine overall safety status
-        let safety_status = self.determine_status(
-            &pathogen_check,
-            &natural_check,
-            &characteristics,
-        );
+        let safety_status =
+            self.determine_status(&pathogen_check, &natural_check, &characteristics);
 
         // Generate recommendations
         let recommendations = self.generate_recommendations(
@@ -72,13 +67,27 @@ impl DNASafetyScreener {
     fn check_pathogen_signatures(&self, sequence: &str) -> PathogenAnalysis {
         // Simplified pathogen signatures
         let signatures = vec![
-            ("viral_polymerase", vec!["ATGGATCCGTATGACTCC", "CCGTATGACTCCATGG"]),
-            ("toxin_genes", vec!["ATGAAGCTGTATGACCC", "GGGTCATACAGCTTCAT"]),
-            ("antibiotic_resistance", vec![
-                "ATGAGCCATATTCAACG", "CGTTGAATATGGCTCAT",
-                "ATGTCGCAGTTCGATCC", "GGATCGAACTGCGACAT"
-            ]),
-            ("virulence_factors", vec!["ATGCTGAAACGTTATGC", "GCATAACGTTTCAGCAT"]),
+            (
+                "viral_polymerase",
+                vec!["ATGGATCCGTATGACTCC", "CCGTATGACTCCATGG"],
+            ),
+            (
+                "toxin_genes",
+                vec!["ATGAAGCTGTATGACCC", "GGGTCATACAGCTTCAT"],
+            ),
+            (
+                "antibiotic_resistance",
+                vec![
+                    "ATGAGCCATATTCAACG",
+                    "CGTTGAATATGGCTCAT",
+                    "ATGTCGCAGTTCGATCC",
+                    "GGATCGAACTGCGACAT",
+                ],
+            ),
+            (
+                "virulence_factors",
+                vec!["ATGCTGAAACGTTATGC", "GCATAACGTTTCAGCAT"],
+            ),
         ];
 
         let mut matches = Vec::new();
@@ -97,11 +106,15 @@ impl DNASafetyScreener {
         }
 
         let (pathogen_risk, risk_level) = if !matches.is_empty() {
-            if matches.iter().any(|m|
-                m.category == "toxin_genes" || m.category == "virulence_factors"
-            ) {
+            if matches
+                .iter()
+                .any(|m| m.category == "toxin_genes" || m.category == "virulence_factors")
+            {
                 (true, RiskLevel::High)
-            } else if matches.iter().any(|m| m.category == "antibiotic_resistance") {
+            } else if matches
+                .iter()
+                .any(|m| m.category == "antibiotic_resistance")
+            {
                 (true, RiskLevel::Medium)
             } else {
                 (true, RiskLevel::Low)
@@ -210,10 +223,7 @@ impl DNASafetyScreener {
 
         // Check for extreme GC content
         if stats.gc_content < 20.0 || stats.gc_content > 80.0 {
-            warnings.push(format!(
-                "Extreme GC content: {:.1}%",
-                stats.gc_content
-            ));
+            warnings.push(format!("Extreme GC content: {:.1}%", stats.gc_content));
         }
 
         // Find homopolymer runs (4+ consecutive same bases)
@@ -241,16 +251,16 @@ impl DNASafetyScreener {
         }
 
         // Find ORFs (simplified)
-        let start_codons = vec!["ATG"];
-        let stop_codons = vec!["TAA", "TAG", "TGA"];
+        let start_codons = ["ATG"];
+        let stop_codons = ["TAA", "TAG", "TGA"];
 
         for frame in 0..3 {
             let mut i = frame;
             while i + 2 < sequence.len() {
-                let codon = &sequence[i..i+3];
+                let codon = &sequence[i..i + 3];
                 if start_codons.contains(&codon) {
                     for j in (i + 3..sequence.len() - 2).step_by(3) {
-                        let stop_codon = &sequence[j..j+3];
+                        let stop_codon = &sequence[j..j + 3];
                         if stop_codons.contains(&stop_codon) {
                             if j - i >= 30 {
                                 orfs.push(OpenReadingFrame {
@@ -268,7 +278,10 @@ impl DNASafetyScreener {
         }
 
         if !orfs.is_empty() {
-            warnings.push(format!("Found {} potential protein-coding sequences", orfs.len()));
+            warnings.push(format!(
+                "Found {} potential protein-coding sequences",
+                orfs.len()
+            ));
         }
 
         // Check for repetitive elements (simplified)
@@ -369,6 +382,7 @@ impl DNASafetyScreener {
 }
 
 /// Internal safety report
+#[derive(Clone, serde::Serialize)]
 pub struct SafetyReport {
     pub dna_sequence: String,
     pub safety_status: SafetyStatus,

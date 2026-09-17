@@ -1,5 +1,7 @@
 # Activity Plan: bi0cyph3r Modernization
 
+> Historical document: web/Flask/API instructions below describe the retired architecture. See the [current terminal-only README](../README.md) for setup and usage.
+
 ## Overview
 This document outlines the plan to remove the login feature and modernize the UI of the bi0cyph3r DNA Cryptography System application.
 
@@ -276,4 +278,3 @@ This document outlines the plan to remove the login feature and modernize the UI
 
 **Last Updated:** 2025-01-XX
 **Status:** ✅ **COMPLETED**
-

@@ -1,5 +1,7 @@
 # BioCypher Rust + Solana — Evaluation & Build Plan
 
+> Historical document: web/Flask/API instructions below describe the retired architecture. See the [current terminal-only README](README.md) for setup and usage.
+
 **Date**: February 17, 2025  
 **Status**: Ready to Execute  
 **Architecture**: Hybrid (Rust backend + Solana smart programs)

@@ -1,5 +1,7 @@
 # BioCypher Rust + Solana Migration - Activity Log
 
+> Historical document: web/Flask/API instructions below describe the retired architecture. See the [current terminal-only README](../README.md) for setup and usage.
+
 ## 2025-01-20
 
 ### 14:30 - Initial Project Review and Planning
@@ -248,4 +250,3 @@ None currently. Ready to proceed with implementation.
 - All configuration files
 
 **Test Results**: 34 passed, 5 failed
-

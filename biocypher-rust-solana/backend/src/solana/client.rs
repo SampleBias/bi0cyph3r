@@ -60,13 +60,12 @@ pub struct SolanaClient {
 impl SolanaClient {
     /// Create client from env vars. Returns None if Solana is disabled (no keypair).
     pub fn from_env() -> Option<Self> {
-        let rpc_url = std::env::var("SOLANA_RPC_URL")
-            .unwrap_or_else(|_| "http://127.0.0.1:8899".to_string());
-        let keypair_path = std::env::var("SOLANA_KEYPAIR_PATH")
-            .unwrap_or_else(|_| {
-                let home = std::env::var("HOME").unwrap_or_else(|_| ".".to_string());
-                format!("{}/.config/solana/id.json", home)
-            });
+        let rpc_url =
+            std::env::var("SOLANA_RPC_URL").unwrap_or_else(|_| "http://127.0.0.1:8899".to_string());
+        let keypair_path = std::env::var("SOLANA_KEYPAIR_PATH").unwrap_or_else(|_| {
+            let home = std::env::var("HOME").unwrap_or_else(|_| ".".to_string());
+            format!("{}/.config/solana/id.json", home)
+        });
         let keypair = read_keypair_file(&keypair_path).ok()?;
         let program_id = Pubkey::from_str(
             std::env::var("BIOCYPHER_STORAGE_PROGRAM_ID")
@@ -110,11 +109,7 @@ impl SolanaClient {
 
     fn encode_record_pda(&self, sequence_hash: &[u8; 32]) -> Result<Pubkey> {
         let (pda, _) = Pubkey::find_program_address(
-            &[
-                b"encode",
-                self.payer()?.pubkey().as_ref(),
-                sequence_hash,
-            ],
+            &[b"encode", self.payer()?.pubkey().as_ref(), sequence_hash],
             &self.program_id,
         );
         Ok(pda)
@@ -122,11 +117,7 @@ impl SolanaClient {
 
     fn decode_record_pda(&self, sequence_hash: &[u8; 32]) -> Result<Pubkey> {
         let (pda, _) = Pubkey::find_program_address(
-            &[
-                b"decode",
-                self.payer()?.pubkey().as_ref(),
-                sequence_hash,
-            ],
+            &[b"decode", self.payer()?.pubkey().as_ref(), sequence_hash],
             &self.program_id,
         );
         Ok(pda)
@@ -134,11 +125,7 @@ impl SolanaClient {
 
     fn safety_record_pda(&self, sequence_hash: &[u8; 32]) -> Result<Pubkey> {
         let (pda, _) = Pubkey::find_program_address(
-            &[
-                b"safety",
-                self.payer()?.pubkey().as_ref(),
-                sequence_hash,
-            ],
+            &[b"safety", self.payer()?.pubkey().as_ref(), sequence_hash],
             &self.program_id,
         );
         Ok(pda)
@@ -288,8 +275,8 @@ pub async fn build_attest_transaction(
     mode: Option<EncodingMode>,
     status: Option<SafetyStatus>,
 ) -> Result<Vec<u8>> {
-    let rpc_url = std::env::var("SOLANA_RPC_URL")
-        .unwrap_or_else(|_| "http://127.0.0.1:8899".to_string());
+    let rpc_url =
+        std::env::var("SOLANA_RPC_URL").unwrap_or_else(|_| "http://127.0.0.1:8899".to_string());
     let program_id = Pubkey::from_str(
         std::env::var("BIOCYPHER_STORAGE_PROGRAM_ID")
             .as_deref()
@@ -304,7 +291,8 @@ pub async fn build_attest_transaction(
 
     let ix = match operation {
         "encode" => {
-            let mode = mode.ok_or_else(|| BioCypherError::Solana("mode required for encode".into()))?;
+            let mode =
+                mode.ok_or_else(|| BioCypherError::Solana("mode required for encode".into()))?;
             let (encode_record, _) = Pubkey::find_program_address(
                 &[b"encode", payer.as_ref(), &sequence_hash],
                 &program_id,
@@ -324,7 +312,8 @@ pub async fn build_attest_transaction(
             }
         }
         "decode" => {
-            let mode = mode.ok_or_else(|| BioCypherError::Solana("mode required for decode".into()))?;
+            let mode =
+                mode.ok_or_else(|| BioCypherError::Solana("mode required for decode".into()))?;
             let (decode_record, _) = Pubkey::find_program_address(
                 &[b"decode", payer.as_ref(), &sequence_hash],
                 &program_id,
@@ -344,7 +333,8 @@ pub async fn build_attest_transaction(
             }
         }
         "safety" => {
-            let status = status.ok_or_else(|| BioCypherError::Solana("status required for safety".into()))?;
+            let status = status
+                .ok_or_else(|| BioCypherError::Solana("status required for safety".into()))?;
             let (safety_record, _) = Pubkey::find_program_address(
                 &[b"safety", payer.as_ref(), &sequence_hash],
                 &program_id,
@@ -363,7 +353,9 @@ pub async fn build_attest_transaction(
                 data,
             }
         }
-        _ => return Err(BioCypherError::Solana(format!("Unknown operation: {}", operation)).into()),
+        _ => {
+            return Err(BioCypherError::Solana(format!("Unknown operation: {}", operation)).into())
+        }
     };
 
     let client = Arc::new(RpcClient::new_with_commitment(

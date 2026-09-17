@@ -37,10 +37,9 @@ keypair.json
 *.secret
 secrets/
 
-# Solana / Arcium
+# Solana
 test-ledger/
 .anchor/
-biocypher-mxe/artifacts/
 
 # IDE
 .idea/

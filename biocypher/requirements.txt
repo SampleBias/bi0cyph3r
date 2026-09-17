@@ -1,10 +1,2 @@
-Flask==2.3.3
-Werkzeug==2.3.7
-Jinja2==3.1.2
-MarkupSafe==2.1.3
-itsdangerous==2.1.2
-click==8.1.7
-Flask-Limiter==3.5.0
-Flask-WTF==1.2.1
-gunicorn==21.2.0
-cryptography==41.0.7 
+# Legacy Python encoding modules only. The primary app is the Rust TUI.
+cryptography==41.0.7
