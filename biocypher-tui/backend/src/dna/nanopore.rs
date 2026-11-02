@@ -253,13 +253,15 @@ impl NanoporeDNACrypto {
     fn nanopore_dna_to_binary(dna: &str) -> Result<String> {
         let mut binary = String::new();
         let chars: Vec<char> = dna.chars().collect();
+        if !chars.len().is_multiple_of(3) {
+            return Err(DNACryptoError::DecodingFailed("Incomplete DNA triplet".into()).into());
+        }
         for chunk in chars.chunks(3) {
-            if chunk.len() == 3 {
-                let triplet: String = chunk.iter().collect();
-                if let Some(bits) = Self::triplet_to_bits(&triplet) {
-                    binary.push_str(bits);
-                }
-            }
+            let triplet: String = chunk.iter().collect();
+            let bits = Self::triplet_to_bits(&triplet).ok_or_else(|| {
+                DNACryptoError::DecodingFailed(format!("Invalid DNA triplet: {triplet}"))
+            })?;
+            binary.push_str(bits);
         }
         Ok(binary)
     }
@@ -277,11 +279,18 @@ impl NanoporeDNACrypto {
                 } else {
                     '1'
                 };
-                if parity_bit == expected_parity {
-                    if let Ok(byte_val) = u8::from_str_radix(&data_bits, 2) {
-                        bytes.push(byte_val);
-                    }
+                if parity_bit != expected_parity {
+                    return Err(DNACryptoError::DecodingFailed("Parity check failed".into()).into());
                 }
+                bytes.push(
+                    u8::from_str_radix(&data_bits, 2).map_err(|_| {
+                        DNACryptoError::DecodingFailed("Invalid binary data".into())
+                    })?,
+                );
+            } else {
+                return Err(
+                    DNACryptoError::DecodingFailed("Incomplete encoded byte".into()).into(),
+                );
             }
         }
         String::from_utf8(bytes).map_err(|e| {
@@ -293,6 +302,14 @@ impl NanoporeDNACrypto {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn malformed_data_is_rejected() {
+        assert!(NanoporeDNACrypto::nanopore_dna_to_binary("AAA").is_err());
+        assert!(NanoporeDNACrypto::nanopore_dna_to_binary("AT").is_err());
+        assert!(NanoporeDNACrypto::binary_to_text_with_parity("010000011").is_err());
+        assert!(NanoporeDNACrypto::binary_to_text_with_parity("0100").is_err());
+    }
 
     #[test]
     fn test_triplet_encoding_table() {

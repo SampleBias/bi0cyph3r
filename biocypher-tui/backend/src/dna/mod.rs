@@ -8,6 +8,7 @@ pub mod nanopore;
 pub mod secure;
 pub mod split_key;
 pub mod traits;
+pub mod v2;
 
 pub use basic::DNACrypto;
 pub use nanopore::NanoporeDNACrypto;
@@ -76,6 +77,8 @@ pub enum EncodingMode {
     Nanopore,
     Secure,
     SplitKey,
+    LegacySecure,
+    LegacySplitKey,
 }
 
 impl std::fmt::Display for EncodingMode {
@@ -85,6 +88,8 @@ impl std::fmt::Display for EncodingMode {
             EncodingMode::Nanopore => write!(f, "nanopore"),
             EncodingMode::Secure => write!(f, "secure"),
             EncodingMode::SplitKey => write!(f, "splitkey"),
+            EncodingMode::LegacySecure => write!(f, "legacy-secure"),
+            EncodingMode::LegacySplitKey => write!(f, "legacy-split"),
         }
     }
 }
@@ -98,6 +103,8 @@ impl std::str::FromStr for EncodingMode {
             "nanopore" => Ok(EncodingMode::Nanopore),
             "secure" => Ok(EncodingMode::Secure),
             "splitkey" => Ok(EncodingMode::SplitKey),
+            "legacy-secure" => Ok(EncodingMode::LegacySecure),
+            "legacy-split" => Ok(EncodingMode::LegacySplitKey),
             _ => Err(format!("Invalid encoding mode: {}", s)),
         }
     }

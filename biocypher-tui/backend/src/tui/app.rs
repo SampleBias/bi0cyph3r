@@ -250,11 +250,16 @@ impl App {
         let mut fields = vec![Field::Input];
         if self.operation() != Operation::Safety {
             fields.push(Field::Mode);
-            if self.workspace().mode == EncodingMode::Secure {
+            if matches!(
+                self.workspace().mode,
+                EncodingMode::Secure | EncodingMode::LegacySecure
+            ) {
                 fields.push(Field::Password);
             }
-            if self.workspace().mode == EncodingMode::SplitKey
-                && self.operation() == Operation::Decode
+            if matches!(
+                self.workspace().mode,
+                EncodingMode::SplitKey | EncodingMode::LegacySplitKey
+            ) && self.operation() == Operation::Decode
             {
                 fields.extend([Field::K1, Field::K2]);
             }
@@ -303,15 +308,17 @@ impl App {
         }
         let workspace = &mut self.pages[self.page];
         let i = MODES.iter().position(|m| *m == workspace.mode).unwrap_or(0);
-        workspace.mode = MODES[(i + if backwards { 3 } else { 1 }) % 4];
+        workspace.mode = MODES[(i + if backwards { MODES.len() - 1 } else { 1 }) % MODES.len()];
         if !self.fields().contains(&self.focus) {
             self.focus = Field::Input;
         }
         self.message(match self.workspace().mode {
             EncodingMode::Basic => "Basic: maps UTF-8 text to DNA; no encryption.",
             EncodingMode::Nanopore => "Nanopore: triplets with parity, redundancy and padding.",
-            EncodingMode::Secure => "Secure: AES-256-CBC. Tab to the password field, then Enter to edit.",
+            EncodingMode::Secure => "Secure: authenticated encryption. Tab to the password field.",
             EncodingMode::SplitKey => "Split key: both K1 and K2 are required to decode. Ctrl+K exports generated keys.",
+            EncodingMode::LegacySecure => "Legacy secure: decode older CBC sequences only; they are not authenticated.",
+            EncodingMode::LegacySplitKey => "Legacy split: decode older CBC sequences only; they are not authenticated.",
         }, false);
     }
 

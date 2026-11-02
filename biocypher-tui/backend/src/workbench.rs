@@ -1,4 +1,4 @@
-//! Shared, local operations for the TUI and scriptable CLI.
+//! Local operations for the TUI.
 
 use std::{
     fs::OpenOptions,
@@ -20,11 +20,13 @@ use crate::{
 pub const MAX_INPUT_BYTES: usize = 256 * 1024;
 // Keeps even the largest Nanopore output within the sequence import limit.
 pub const MAX_MESSAGE_BYTES: usize = 4 * 1024;
-pub const MODES: [EncodingMode; 4] = [
+pub const MODES: [EncodingMode; 6] = [
     EncodingMode::Basic,
     EncodingMode::Nanopore,
     EncodingMode::Secure,
     EncodingMode::SplitKey,
+    EncodingMode::LegacySecure,
+    EncodingMode::LegacySplitKey,
 ];
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
@@ -179,16 +181,18 @@ pub fn execute(request: &Request) -> Result<Output> {
                 EncodingMode::Basic => DNACrypto::encode_message(&request.input)?,
                 EncodingMode::Nanopore => NanoporeDNACrypto::encode_message(&request.input)?,
                 EncodingMode::Secure => {
-                    SecureDNACrypto::encode_with_password(&request.input, &request.password)?
+                    crate::dna::v2::encode_password(&request.input, &request.password)?
                 }
                 EncodingMode::SplitKey => {
-                    let (seq, k1_base64, k2_base64) =
-                        SplitKeyDNACrypto::encode_with_split_keys(&request.input)?;
+                    let (seq, k1_base64, k2_base64) = crate::dna::v2::encode_split(&request.input)?;
                     keys = Some(Keys {
                         k1_base64,
                         k2_base64,
                     });
                     seq
+                }
+                EncodingMode::LegacySecure | EncodingMode::LegacySplitKey => {
+                    bail!("Legacy modes are for decoding existing sequences only")
                 }
             };
             let sequence = if request.operation == Operation::Plasmid {
@@ -211,9 +215,15 @@ pub fn execute(request: &Request) -> Result<Output> {
                 EncodingMode::Basic => DNACrypto::decode_sequence(&sequence)?,
                 EncodingMode::Nanopore => NanoporeDNACrypto::decode_sequence(&sequence)?,
                 EncodingMode::Secure => {
+                    crate::dna::v2::decode_password(&sequence, &request.password)?
+                }
+                EncodingMode::SplitKey => {
+                    crate::dna::v2::decode_split(&sequence, request.k1.trim(), request.k2.trim())?
+                }
+                EncodingMode::LegacySecure => {
                     SecureDNACrypto::decode_with_password(&sequence, &request.password)?
                 }
-                EncodingMode::SplitKey => SplitKeyDNACrypto::decode_with_split_keys(
+                EncodingMode::LegacySplitKey => SplitKeyDNACrypto::decode_with_split_keys(
                     &sequence,
                     request.k1.trim(),
                     request.k2.trim(),
@@ -302,6 +312,26 @@ pub fn save_new(path: &Path, contents: &str) -> Result<()> {
 mod tests {
     use super::*;
 
+    #[test]
+    fn legacy_formats_require_explicit_decode_modes() {
+        let mut req = request(EncodingMode::LegacySecure);
+        assert!(execute(&req).is_err());
+        req.input = SecureDNACrypto::encode_with_password("old text", &req.password).unwrap();
+        req.operation = Operation::Decode;
+        assert_eq!(execute(&req).unwrap().text, "old text");
+        req.mode = EncodingMode::Secure;
+        assert!(execute(&req).is_err());
+
+        let (sequence, k1, k2) = SplitKeyDNACrypto::encode_with_split_keys("old split").unwrap();
+        req.input = sequence;
+        req.mode = EncodingMode::LegacySplitKey;
+        req.k1 = k1;
+        req.k2 = k2;
+        assert_eq!(execute(&req).unwrap().text, "old split");
+        req.mode = EncodingMode::SplitKey;
+        assert!(execute(&req).is_err());
+    }
+
     fn request(mode: EncodingMode) -> Request {
         Request {
             operation: Operation::Encode,
@@ -317,7 +347,7 @@ mod tests {
 
     #[test]
     fn all_modes_roundtrip_through_fasta() {
-        for mode in MODES {
+        for mode in MODES[..4].iter().copied() {
             let mut req = request(mode);
             let encoded = execute(&req).unwrap();
             req.input = encoded.export(Format::Fasta).unwrap();
@@ -332,7 +362,7 @@ mod tests {
 
     #[test]
     fn utf8_and_newlines_roundtrip_without_extra_bytes() {
-        for mode in MODES {
+        for mode in MODES[..4].iter().copied() {
             let mut req = request(mode);
             req.input = "Hello 🧬\nCafé\t世界\n".into();
             let encoded = execute(&req).unwrap();

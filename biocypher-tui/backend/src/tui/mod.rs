@@ -23,7 +23,7 @@ pub fn run() -> anyhow::Result<()> {
 
 pub fn run_with_theme(theme: Theme) -> anyhow::Result<()> {
     if !io::stdin().is_terminal() || !io::stdout().is_terminal() {
-        anyhow::bail!("The TUI needs an interactive terminal. Use --help for scriptable commands.");
+        anyhow::bail!("The TUI needs an interactive terminal.");
     }
     ratatui::run(|terminal| -> anyhow::Result<()> {
         // RAII cleanup also covers errors and unwinding; Ratatui restores raw mode.

@@ -220,21 +220,6 @@ impl Widget for Helix {
                     .set_fg(color);
             }
         };
-        for row in (0..area.height as usize).step_by(2) {
-            let (x1, x2, _) = nodes[row * 4 + 2];
-            let (x1, x2) = (x1 / 2, x2 / 2);
-            put(buffer, center as usize / 2, row, ".", self.colors.border);
-            if x1.abs_diff(x2) > 4 {
-                for x in x1.min(x2) + 1..x1.max(x2) {
-                    put(buffer, x, row, "-", self.colors.border);
-                }
-                let pair = if row % 4 == 0 { ("A", "T") } else { ("C", "G") };
-                let a = (x1 as f64 * 0.72 + x2 as f64 * 0.28).round() as usize;
-                let b = (x1 as f64 * 0.28 + x2 as f64 * 0.72).round() as usize;
-                put(buffer, a, row, pair.0, self.colors.positive);
-                put(buffer, b, row, pair.1, self.colors.warning);
-            }
-        }
         let mut cells = vec![
             (0u8, self.colors.muted, f64::NEG_INFINITY);
             area.width as usize * area.height as usize
@@ -273,6 +258,24 @@ impl Widget for Helix {
                     &symbol.to_string(),
                     color,
                 );
+            }
+        }
+
+        // Keep the base pairs legible by drawing them after the animated
+        // backbones. The strands use Braille cells for smooth curves, which
+        // otherwise overwrite letters where the two layers intersect.
+        for row in (0..area.height as usize).step_by(2) {
+            let (x1, x2, _) = nodes[row * 4 + 2];
+            let (x1, x2) = (x1 / 2, x2 / 2);
+            if x1.abs_diff(x2) > 4 {
+                for x in x1.min(x2) + 1..x1.max(x2) {
+                    put(buffer, x, row, "─", self.colors.border);
+                }
+                let pair = if row % 4 == 0 { ("A", "T") } else { ("C", "G") };
+                let a = (x1 as f64 * 0.72 + x2 as f64 * 0.28).round() as usize;
+                let b = (x1 as f64 * 0.28 + x2 as f64 * 0.72).round() as usize;
+                put(buffer, a, row, pair.0, self.colors.positive);
+                put(buffer, b, row, pair.1, self.colors.warning);
             }
         }
     }
@@ -333,7 +336,8 @@ fn guide(frame: &mut Frame, app: &mut App) {
         section("CHOOSE A MODE"),
         Line::raw("Basic   UTF-8 bytes mapped to DNA; no encryption."),
         Line::raw("Nanopore   Triplets, parity, redundancy, and padding."),
-        Line::raw("Secure   The existing AES-256-CBC format; enter a password."),
+        Line::raw("Secure   Authenticated encryption; enter a password."),
+        Line::raw("Legacy modes decode older CBC sequences without authentication."),
         Line::raw(
             "Split Key   Both K1 and K2 are needed to decode. Export and store them separately.",
         ),

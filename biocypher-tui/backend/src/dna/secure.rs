@@ -184,7 +184,7 @@ impl SecureDNACrypto {
         }
 
         let salt_len = u16::from_be_bytes([combined[0], combined[1]]) as usize;
-        if combined.len() < 2 + salt_len {
+        if salt_len != Self::SALT_SIZE || combined.len() < 2 + salt_len {
             return Err(DNACryptoError::DecryptionError("Invalid salt length".to_string()).into());
         }
         let salt = combined[2..2 + salt_len].to_vec();
@@ -194,6 +194,9 @@ impl SecureDNACrypto {
             return Err(DNACryptoError::DecryptionError("Invalid IV length".to_string()).into());
         }
         let iv_len = u16::from_be_bytes([combined[iv_start], combined[iv_start + 1]]) as usize;
+        if iv_len != Self::IV_SIZE || combined.len() < iv_start + 2 + iv_len {
+            return Err(DNACryptoError::DecryptionError("Invalid IV length".to_string()).into());
+        }
         let iv = combined[iv_start + 2..iv_start + 2 + iv_len].to_vec();
 
         let data_start = iv_start + 2 + iv_len;
@@ -206,6 +209,9 @@ impl SecureDNACrypto {
             combined[data_start + 2],
             combined[data_start + 3],
         ]) as usize;
+        if data_len != combined.len() - (data_start + 4) {
+            return Err(DNACryptoError::DecryptionError("Invalid data length".to_string()).into());
+        }
         let encrypted_data = combined[data_start + 4..data_start + 4 + data_len].to_vec();
 
         Ok((encrypted_data, iv, salt))
@@ -246,6 +252,17 @@ impl SecureDNACrypto {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn truncated_crypto_data_returns_an_error() {
+        let mut blob = vec![0, 16];
+        blob.extend_from_slice(&[0; 16]);
+        blob.extend_from_slice(&[0, 16]);
+        assert!(SecureDNACrypto::string_to_crypto_data(&BASE64.encode(&blob)).is_err());
+        blob.extend_from_slice(&[0; 16]);
+        blob.extend_from_slice(&[0, 0, 0, 10]);
+        assert!(SecureDNACrypto::string_to_crypto_data(&BASE64.encode(&blob)).is_err());
+    }
 
     #[test]
     fn test_constants() {

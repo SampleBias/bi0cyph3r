@@ -367,7 +367,7 @@ impl Ui {
         );
         let mut next = 1;
         if has_mode {
-            let spans = if area.width >= 46 {
+            let spans = if area.width >= 85 {
                 MODES
                     .iter()
                     .map(|mode| {

@@ -4,12 +4,12 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$REPO_ROOT/biocypher-rust-solana"
+cd "$REPO_ROOT/biocypher-tui"
 
 echo "🧬 Building Bi0cyph3r..."
 cargo build --locked --release --bin bi0cyph3r
 
-BIN="$REPO_ROOT/biocypher-rust-solana/target/release/bi0cyph3r"
+BIN="$REPO_ROOT/biocypher-tui/target/release/bi0cyph3r"
 echo ""
 echo "✅ Build complete!"
 echo ""
@@ -28,8 +28,5 @@ fi
 echo ""
 echo "Usage:"
 echo "  bi0cyph3r                     # Open the Ratatui workbench"
-echo "  bi0cyph3r encode \"Hello World\""
-echo "  bi0cyph3r decode \"TACATCTTTCG...\""
-echo "  bi0cyph3r safety \"ATCGATCG\""
 echo ""
 echo "  ./run-tui.sh                  # Run from this checkout"
